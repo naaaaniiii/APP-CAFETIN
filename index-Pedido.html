@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cafetín UCLA - Pedidos Comunidad</title>
+  <link rel="stylesheet" href="style-Pedido.css" />
+</head>
+<body>
+  <header class="header-app">
+    <h1>🍔 Cafetín UCLA - DCyT</h1>
+    <p>Portal de Pedidos para la Comunidad Universitaria</p>
+  </header>
+
+  <main class="contenedor-principal">
+    <!-- PASO 1: DATOS USUARIO -->
+    <section id="secDatosUsuario" class="tarjeta-modulo">
+      <div class="modulo-cabecera">
+        <span class="paso-numero">1</span>
+        <h2>Datos del Solicitante</h2>
+      </div>
+      <div class="modulo-cuerpo formulario-linea">
+        <div class="grupo-input">
+          <label for="pedido_inCedula">Cédula:</label>
+          <input type="number" id="pedido_inCedula" placeholder="Ej. 27123456" />
+        </div>
+        <div class="grupo-input">
+          <label for="pedido_inNombre">Nombre Completo:</label>
+          <input type="text" id="pedido_inNombre" placeholder="Ej. Ana Pérez" />
+        </div>
+      </div>
+    </section>
+
+    <!-- PASO 2: MENÚ DEL DÍA (CON ACORDEONES) -->
+    <section class="tarjeta-modulo">
+      <div class="modulo-cabecera">
+        <span class="paso-numero">2</span>
+        <h2>Menú del Día</h2>
+      </div>
+      <p class="instruccion">Presiona sobre una sección para desplegar sus productos disponibles:</p>
+
+      <!-- ACORDEÓN COMIDAS -->
+      <div id="categoria-comida" class="categoria-bloque">
+        <div class="categoria-cabecera">
+          <h3>🍔 Comidas</h3>
+        </div>
+        <div class="contenido grid-productos"></div>
+      </div>
+
+      <!-- ACORDEÓN BEBIDAS -->
+      <div id="categoria-bebida" class="categoria-bloque">
+        <div class="categoria-cabecera">
+          <h3>🥤 Bebidas</h3>
+        </div>
+        <div class="contenido grid-productos"></div>
+      </div>
+
+      <!-- ACORDEÓN POSTRES -->
+      <div id="categoria-postre" class="categoria-bloque">
+        <div class="categoria-cabecera">
+          <h3>🍰 Postres</h3>
+        </div>
+        <div class="contenido grid-productos"></div>
+      </div>
+
+      <!-- ACORDEÓN CHUCHERÍAS -->
+      <div id="categoria-chucheria" class="categoria-bloque">
+        <div class="categoria-cabecera">
+          <h3>🍿 Chucherías</h3>
+        </div>
+        <div class="contenido grid-productos"></div>
+      </div>
+
+      <!-- ACORDEÓN COMBOS -->
+      <div id="categoria-combo" class="categoria-bloque">
+        <div class="categoria-cabecera">
+          <h3>🎁 Combos Especiales</h3>
+        </div>
+        <div class="contenido grid-productos"></div>
+      </div>
+    </section>
+
+    <!-- CARRITO Y FACTURA -->
+    <section class="tarjeta-resumen">
+      <h2>🛒 Tu Carrito / Factura</h2>
+      <div class="tasa-dia">
+        <span>Tasa de cambio:</span>
+        <strong id="pedido_lblTasa">0.00</strong> <small>Bs/$</small>
+      </div>
+      <div class="totales-contenedor">
+        <div class="total-fila usd">
+          <span>Total en Dólares:</span>
+          <div><span id="pedido_lblTotalUSD">0.00</span> $</div>
+        </div>
+        <div class="total-fila bs">
+          <span>Total en Bolívares:</span>
+          <div><span id="pedido_lblTotalBS">0.00</span> Bs</div>
+        </div>
+      </div>
+      <button id="pedido_btSiguiente" class="btn-primario btn-bloque">Confirmar y proceder al Pago</button>
+    </section>
+
+    <!-- PASO 3: REGISTRO DE PAGO EXTENDIDO (OCULTO INICIALMENTE) -->
+    <section id="secPago" class="tarjeta-modulo oculto border-pago">
+      <div class="modulo-cabecera">
+        <span class="paso-numero">3</span>
+        <h2>Método de Pago</h2>
+      </div>
+      <div class="modulo-cuerpo">
+        
+        <div class="grupo-input" style="margin-bottom: 15px;">
+          <label for="pedido_selectMetodoPago">Seleccione su forma de pago:</label>
+          <select id="pedido_selectMetodoPago">
+            <option value="transferencia">Bank Transfer (Transferencia Bancaria)</option>
+            <option value="pagomovil">Pago Móvil</option>
+            <option value="punto">Punto de Venta</option>
+            <option value="efectivoUSD">Efectivo en Dólares ($)</option>
+            <option value="efectivoBS">Efectivo en Bolívares (Bs)</option>
+          </select>
+        </div>
+
+        <!-- SUBFORMULARIO 1: PARA TRANSFERENCIA Y PAGO MÓVIL -->
+        <div id="secCamposBanco">
+          <div class="grupo-input">
+            <label for="pedido_inCuentaDestino">Cuenta Receptora Cafetín:</label>
+            <select id="pedido_inCuentaDestino"></select>
+          </div>
+          <div class="formulario-linea" style="margin-top: 15px;">
+            <div class="grupo-input">
+              <label for="pedido_inCuentaOrigen">Banco Emisor (Origen):</label>
+              <input type="text" id="pedido_inCuentaOrigen" placeholder="Ej. Banesco, BDV" />
+            </div>
+            <div class="grupo-input">
+              <label for="pedido_inReferencia">Nro. de Referencia (Últimos 4 dígitos):</label>
+              <input type="text" id="pedido_inReferencia" placeholder="Ej. 0509" />
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBFORMULARIO 2: PARA OPERACIONES POR PUNTO DE VENTA -->
+        <div id="secCamposPunto" class="oculto">
+          <div class="grupo-input" style="margin-bottom: 10px;">
+            <label for="pedido_inPuntoCedula">Cédula del Tarjetahabiente:</label>
+            <input type="number" id="pedido_inPuntoCedula" placeholder="Ej. 25123456" />
+          </div>
+          <div class="formulario-linea">
+            <div class="grupo-input">
+              <label for="pedido_selectPuntoTipo">Tipo de Cuenta:</label>
+              <select id="pedido_selectPuntoTipo">
+                <option value="ahorro">Ahorro</option>
+                <option value="corriente">Corriente</option>
+              </select>
+            </div>
+            <div class="grupo-input">
+              <label for="pedido_inPuntoClave">Clave de Tarjeta (4-6 dígitos):</label>
+              <input type="password" id="pedido_inPuntoClave" maxlength="6" placeholder="••••" />
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTENEDOR DE TEXTO INFORMATIVO PARA EFECTIVO -->
+        <p id="pedido_lblInfoEfectivo" style="color: #bf360c; font-size: 13px; font-weight: 600; margin-top: 10px;"></p>
+
+        <button id="pedido_btEnviar" class="btn-exito btn-bloque" style="margin-top: 20px;">
+          Enviar Pedido al Cafetín
+        </button>
+      </div>
+    </section>
+
+    <!-- CONSULTA DE STATUS -->
+    <section class="tarjeta-modulo consulta-status">
+      <div class="modulo-cabecera">
+        <h2>🔍 Consultar Estado de mi Pedido</h2>
+      </div>
+      <div class="modulo-cuerpo formulario-linea inline-buscar">
+        <input type="number" id="pedido_inCedulaBuscar" placeholder="Introduce tu cédula" />
+        <button id="pedido_btBuscar" class="btn-secundario">Buscar Orden</button>
+      </div>
+      <div id="pedido_lblEstadoResultado" class="resultado-busqueda"></div>
+    </section>
+  </main>
+
+  <footer class="footer-creditos">
+    <p>© 2026 UCLA DCyT - Proyecto de Programación</p>
+    <p class="autor-info">Desarrollado por <strong>Git Force</strong> | Todos los derechos reservados © 2026</p>
+  </footer>
+
+  <script type="module">
+    import Cl_mPedido from "./dist/models/Cl_mPedido.js";
+    import Cl_vPedido from "./dist/views/Cl_vPedido.js";
+    import Cl_cPedido from "./dist/controllers/Cl_cPedido.js";
+
+    const vista = new Cl_vPedido();
+    const modelo = new Cl_mPedido({
+      id: "", cedula: 0, nombre: "", resumenProductos: "",
+      montoTotal$: 0, montoTotalBs: 0, cuentaOrigen: "", cuentaDestino: "", referencia: ""
+    });
+    new Cl_cPedido({ modelo, vista });
+  </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cafetín UCLA - Panel de Administración</title>
+  <link rel="stylesheet" href="style-Cafetin.css" />
+</head>
+<body>
+  <header class="admin-header">
+    <h1>🍔 Cafetín UCLA - Panel de Control Administrativo</h1>
+    <p>Gestión operativa del Menú, Tasas de Cambio y Auditoría de Pagos</p>
+  </header>
+
+  <div id="admin_contenedorEstadisticas" class="contenedor-principal" style="max-width: 1200px; margin: 20px auto 0 auto; padding: 0 15px;"></div>
+
+  <main class="admin-grid">
+    <div class="columna-lateral">
+      
+      <!-- CONFIGURACIÓN DE TASA -->
+      <section class="card">
+        <h3>💵 Tasa del Día (Dólar oficial)</h3>
+        <div class="form-grupo row-inline">
+          <input type="number" id="admin_inTasa" step="0.01" />
+          <button id="admin_btTasa" class="btn-admin">Actualizar</button>
+        </div>
+      </section>
+
+      <!-- CARGAR PRODUCTO -->
+      <section class="card">
+        <h3>🍔 Cargar Producto al Menú</h3>
+        <div class="form-grupo">
+          <label>Nombre del Producto:</label>
+          <input type="text" id="admin_inProdNombre" placeholder="Ej. Arepa Reina Pepiada" />
+        </div>
+        <div class="form-grupo">
+          <label>Precio ($):</label>
+          <input type="number" id="admin_inProdPrecio" step="0.01" placeholder="Ej. 2.50" />
+        </div>
+        <div class="form-grupo">
+          <label>Categoría:</label>
+          <select id="admin_inProdCategoria">
+            <option value="comida">🍔 Comida</option>
+            <option value="bebida">🥤 Bebida</option>
+            <option value="postre">🍰 Postre</option>
+            <option value="chucheria">🍿 Chuchería</option>
+            <option value="combo">🎁 Combo</option>
+          </select>
+        </div>
+        <button id="admin_btProd" class="btn-admin btn-exito">Guardar en Menú</button>
+      </section>
+
+      <!-- REGISTRO DE CUENTAS RECEPTORAS CAFETÍN -->
+      <section class="card">
+        <h3>🏦 Registrar Canal Financiero</h3>
+        
+        <div class="form-grupo">
+          <label>Tipo de Registro:</label>
+          <select id="admin_selectTipoFondo">
+            <option value="transferencia">Cuenta Bancaria (Transferencia)</option>
+            <option value="pagomovil">Pago Móvil</option>
+          </select>
+        </div>
+
+        <div class="form-grupo">
+          <label>Banco:</label>
+          <input type="text" id="admin_inCtaBanco" placeholder="Ej. Banesco, BDV, Mercantil" />
+        </div>
+
+        <div class="form-grupo">
+          <label id="lblCtaCedula">Cédula o RIF del Titular:</label>
+          <input type="text" id="admin_inCtaCedula" placeholder="Ej. V-12345678" />
+        </div>
+
+        <!-- CAMPO EXCLUSIVO DE TRANSFERENCIA -->
+        <div id="grupoNombreTitular" class="form-grupo">
+          <label>Nombre del Titular:</label>
+          <input type="text" id="admin_inCtaTitular" placeholder="Ej. Cafetín UCLA, C.A." />
+        </div>
+
+        <!-- CAMPO DINÁMICO: PUEDE SER NÚMERO DE CUENTA O TELÉFONO -->
+        <div class="form-grupo">
+          <label id="lblDinamicoNumero">Número de Cuenta (20 dígitos):</label>
+          <input type="text" id="admin_inCtaNumero" placeholder="Ej. 01020000..." />
+        </div>
+
+        <button id="admin_btCta" class="btn-admin">Registrar Cuenta</button>
+      </section>
+
+      <!-- MENÚ ACTUAL -->
+      <section class="card">
+        <h3>📋 Menú Cargado Actual</h3>
+        <ul id="admin_listaProductos" class="lista-prods"></ul>
+      </section>
+    </div>
+
+    <!-- LISTADO DE PEDIDOS -->
+    <div class="columna-principal">
+      <section class="card card-tabla">
+        <h3>📥 Pedidos Recibidos (Por Verificar)</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Estudiante</th>
+                <th>Productos Solicitados</th>
+                <th>Monto Total</th>
+                <th>Cuentas (Ref)</th>
+                <th>Referencia</th>
+                <th style="width:140px;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="admin_tablaPedidos"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer-creditos">
+    <p>© 2026 UCLA DCyT - Proyecto de Programación</p>
+    <p class="autor-info">Desarrollado por <strong>Git Force</strong> | Todos los derechos reservados © 2026</p>
+  </footer>
+
+  <script type="module">
+    import Cl_mCafetin from "./dist/models/Cl_mCafetin.js";
+    import Cl_vCafetin from "./dist/views/Cl_vCafetin.js";
+    import Cl_cCafetin from "./dist/controllers/Cl_cCafetin.js";
+
+    const modelo = new Cl_mCafetin(0);
+    const vista = new Cl_vCafetin();
+    new Cl_cCafetin({ modelo, vista });
+  </script>
+</body>
+</html>

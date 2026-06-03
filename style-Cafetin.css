@@ -1,0 +1,401 @@
+/* --- CONFIGURACIÓN BASE Y RESET --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: #faf6f0; /* Fondo crema muy suave de administración */
+  color: #3e2723; /* Texto marrón café oscuro */
+  line-height: 1.5;
+  padding-bottom: 30px;
+}
+
+/* --- ENCABEZADO DEL ADMINISTRADOR --- */
+.admin-header { 
+  background: linear-gradient(135deg, #2d1f1e 0%, #4e342e 100%); /* Fondo café oscuro corporativo */
+  color: #fff; 
+  text-align: center; 
+  padding: 25px 15px; 
+  border-bottom: 4px solid #d84315; /* Línea de acento naranja UCLA */
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.admin-header h1 { 
+  font-size: 20px; 
+  font-weight: 700; 
+  margin-bottom: 4px; 
+}
+
+.admin-header p { 
+  font-size: 13px; 
+  opacity: 0.85; 
+}
+
+/* --- DISEÑO DE GRID ELÁSTICO (COMPUTADORA) --- */
+.admin-grid { 
+  display: flex; 
+  flex-direction: row; 
+  gap: 20px; 
+  max-width: 1200px; 
+  margin: 20px auto; 
+  padding: 0 15px; 
+}
+
+.columna-lateral { 
+  flex: 1; 
+  min-width: 320px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px; 
+}
+
+.columna-principal { 
+  flex: 2.8; 
+  min-width: 0; /* Previene el desborde de contenedores flexibles */
+}
+
+/* --- TARJETAS (CARDS) --- */
+.card { 
+  background: #fff; 
+  border-radius: 8px; 
+  padding: 20px; 
+  box-shadow: 0 2px 5px rgba(78,52,46,0.04); 
+  border: 1px solid #f1eae4;
+}
+
+.card h3 { 
+  color: #4e342e; 
+  border-bottom: 2px solid #fbe9e7; 
+  padding-bottom: 8px; 
+  margin-bottom: 15px; 
+  font-size: 15px; 
+  font-weight: 600; 
+}
+
+/* --- COMPONENTES DE FORMULARIO --- */
+.form-grupo { 
+  display: flex; 
+  flex-direction: column; 
+  margin-bottom: 14px; 
+  gap: 5px; 
+}
+
+.form-grupo label { 
+  font-size: 12px; 
+  font-weight: 600; 
+  color: #6d4c41; 
+}
+
+input, select { 
+  width: 100%; 
+  padding: 9px 12px; 
+  border: 1px solid #d7ccc8; 
+  border-radius: 6px; 
+  font-size: 13px; 
+  color: #3e2723; 
+  background-color: #fff; 
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus { 
+  border-color: #d84315; 
+  outline: none; 
+  box-shadow: 0 0 0 3px rgba(216, 67, 21, 0.12); 
+}
+
+/* Línea inline para la tasa */
+.row-inline { 
+  display: flex; 
+  flex-direction: row; 
+  gap: 10px; 
+  align-items: flex-end; 
+}
+
+.row-inline input { 
+  flex: 2; 
+}
+
+.row-inline button { 
+  flex: 1; 
+  height: 38px; 
+}
+
+/* --- BOTONES DE CONTROL --- */
+.btn-admin { 
+  background-color: #4e342e; 
+  color: #fff; 
+  border: none; 
+  padding: 10px 14px; 
+  cursor: pointer; 
+  border-radius: 6px; 
+  font-weight: 600; 
+  font-size: 13px; 
+  width: 100%; 
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.btn-admin:hover { 
+  background-color: #3e2723; 
+}
+
+.btn-exito { 
+  background-color: #d84315; 
+  margin-top: 6px; 
+}
+
+.btn-exito:hover { 
+  background-color: #bf360c; 
+}
+
+/* --- TABLAS OPERATIVAS Y CONTROL DE SCROLL --- */
+.card-tabla { 
+  padding: 15px; 
+}
+
+/* Contenedor interno de la tabla con scroll vertical controlado */
+.card-tabla > div {
+  max-height: 500px; /* Evita que crezca infinitamente hacia abajo */
+  overflow-y: auto;  /* Activa la barra de desplazamiento vertical */
+  overflow-x: auto;  /* Mantiene soporte táctil horizontal en celulares */
+  border: 1px solid #f5eae4;
+  border-radius: 6px;
+}
+
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  font-size: 12px; 
+  text-align: left; 
+}
+
+/* Fijar el encabezado arriba (Scroll Invariante) */
+table thead th { 
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: #fbe9e7; 
+  color: #5d4037; 
+  padding: 12px 10px; 
+  font-weight: 600; 
+  border-bottom: 2px solid #f5eae4; 
+  box-shadow: inset 0 -2px 0 #f5eae4; /* Protege el corte visual del borde superior */
+}
+
+td { 
+  padding: 12px 10px; 
+  border-bottom: 1px solid #fbe9e7; 
+  color: #3e2723; 
+  vertical-align: middle; 
+}
+
+tr:hover { 
+  background-color: #fffdfb; 
+}
+
+/* Listado de menú cargado lateral */
+.lista-prods { 
+  list-style: none; 
+  padding: 0; 
+  max-height: 240px; 
+  overflow-y: auto; 
+}
+
+.prod-item { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 8px 0; 
+  border-bottom: 1px dashed #f1eae4; 
+  font-size: 12px; 
+}
+
+/* Botones de acción rápidos dentro de la tabla */
+.btn-ok { 
+  background-color: #2e7d32; 
+  color: white; 
+  border: none; 
+  padding: 5px 10px; 
+  border-radius: 4px; 
+  cursor: pointer; 
+  font-weight: bold; 
+  font-size: 12px; 
+  margin-right: 4px;
+}
+
+.btn-no { 
+  background-color: #c62828; 
+  color: white; 
+  border: none; 
+  padding: 5px 10px; 
+  border-radius: 4px; 
+  cursor: pointer; 
+  font-weight: bold; 
+  font-size: 12px; 
+}
+
+.btn-ok:hover, .btn-no:hover { 
+  opacity: 0.85; 
+}
+
+.btn-del { 
+  background-color: transparent; 
+  border: none; 
+  color: #c62828; 
+  cursor: pointer; 
+  font-size: 15px; 
+  padding: 4px; 
+}
+
+.btn-del:hover { 
+  transform: scale(1.15); 
+}
+
+/* --- SECCIÓN DE ESTADÍSTICAS --- */
+.stat-container { 
+  display: flex; 
+  gap: 12px; 
+  flex-wrap: wrap; 
+  margin-bottom: 15px; 
+}
+
+.stat-box { 
+  background: #fff; 
+  padding: 12px 14px; 
+  border-radius: 6px; 
+  border-left: 4px solid #4e342e; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02); 
+  flex: 1; 
+  min-width: 140px; 
+  border-top: 1px solid #f1eae4; 
+  border-right: 1px solid #f1eae4; 
+  border-bottom: 1px solid #f1eae4;
+}
+
+.stat-box small { 
+  color: #8d6e63; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+  font-size: 9px; 
+  letter-spacing: 0.4px; 
+}
+
+.stat-box h2 { 
+  font-size: 15px; 
+  color: #3e2723; 
+  font-weight: 700; 
+  margin-top: 3px; 
+}
+
+.stat-monto { 
+  border-left-color: #2e7d32; 
+  flex: 1.5; 
+}
+
+.monto-dolar { 
+  font-size: 11px; 
+  color: #6d4c41; 
+  font-weight: 600; 
+}
+
+/* --- DETALLES DE TEXTO Y BADGES --- */
+td b { 
+  color: #2d1f1e; 
+}
+
+td small { 
+  display: block; 
+  line-height: 1.3; 
+  margin-top: 3px; 
+  color: #8d6e63; 
+  font-size: 11px; 
+}
+
+.ref-badge { 
+  background-color: #fbe9e7; 
+  color: #bf360c; 
+  padding: 3px 6px; 
+  border-radius: 4px; 
+  font-family: monospace; 
+  font-weight: 700; 
+  font-size: 11px; 
+}
+
+.badge { 
+  padding: 4px 8px; 
+  border-radius: 12px; 
+  font-size: 10px; 
+  font-weight: 700; 
+  text-transform: uppercase; 
+  display: inline-block; 
+}
+
+.status-aceptado { 
+  background-color: #e8f5e9; 
+  color: #1b5e20; 
+  border: 1px solid #c8e6c9; 
+}
+
+.status-rechazado { 
+  background-color: #ffebee; 
+  color: #b71c1c; 
+  border: 1px solid #ffcdd2; 
+}
+
+.status-pendiente { 
+  background-color: #fff8e1; 
+  color: #f57f17; 
+  border: 1px solid #ffecb3; 
+}
+
+.footer-creditos {
+  text-align: center; 
+  padding: 20px; 
+  color: #8d6e63; 
+  font-size: 12px; 
+  margin-top: 25px;
+}
+
+.autor-info {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* --- ADAPTACIÓN RESPONSIVA (MEDIA QUERIES) --- */
+
+/* Ajuste para Tablets y Celulares medianos */
+@media (max-width: 992px) {
+  .admin-grid { 
+    flex-direction: column; /* Apila el panel lateral sobre la tabla de pedidos */
+  }
+  
+  .columna-lateral, .columna-principal {
+    width: 100%; 
+  }
+}
+
+/* Ajuste fino para Teléfonos Móviles Pequeños */
+@media (max-width: 576px) {
+  .admin-header h1 {
+    font-size: 16px;
+  }
+  
+  .stat-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Las estadísticas se acomodan en un grid de 2 columnas */
+    gap: 8px;
+  }
+  
+  .stat-monto {
+    grid-column: span 2; /* El monto total abarca las dos columnas para no cortarse */
+  }
+}
+
+/* --- CONTROL DINÁMICO DE OCULTACIÓN (OBLIGATORIO) --- */
+.oculto {
+  display: none !important;
+}
