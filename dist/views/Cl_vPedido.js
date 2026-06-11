@@ -191,20 +191,42 @@ export default class Cl_vPedido {
         }).join("");
     }
     // --- GETTERS ---
-    get cedula() { return parseInt(this.inCedula.value.trim()) || 0; }
-    get nombre() { return this.inNombre.value.trim(); }
-    get montoTotal$() { return this.totalUSD; }
-    get montoTotalBs() { return this.totalBS; }
-    get cuentaOrigen() { return this.inCuentaOrigen.value.trim(); }
-    get cuentaDestino() { return this.inCuentaDestino.value; }
-    get referencia() { return this.inReferencia.value.trim(); }
-    get cedulaABuscar() { return parseInt(this.inCedulaBuscar.value.trim()) || 0; }
+    get cedula() {
+        return parseInt(this.inCedula.value.trim()) || 0;
+    }
+    get nombre() {
+        return this.inNombre.value.trim();
+    }
+    get montoTotal$() {
+        return this.totalUSD;
+    }
+    get montoTotalBs() {
+        return this.totalBS;
+    }
+    get cuentaOrigen() {
+        return this.inCuentaOrigen.value.trim();
+    }
+    get cuentaDestino() {
+        return this.inCuentaDestino.value;
+    }
+    get referencia() {
+        return this.inReferencia.value.trim();
+    }
+    get cedulaABuscar() {
+        return parseInt(this.inCedulaBuscar.value.trim()) || 0;
+    }
     get metodoPago() {
         return this.selectMetodoPago.value;
     }
-    get puntoCedula() { return parseInt(this.inPuntoCedula.value.trim()) || 0; }
-    get puntoClave() { return this.inPuntoClave.value.trim(); }
-    get puntoTipoCuenta() { return this.selectPuntoTipo.value; }
+    get puntoCedula() {
+        return parseInt(this.inPuntoCedula.value.trim()) || 0;
+    }
+    get puntoClave() {
+        return this.inPuntoClave.value.trim();
+    }
+    get puntoTipoCuenta() {
+        return this.selectPuntoTipo.value;
+    }
     get resumenProductos() {
         return Object.entries(this.carrito)
             .filter(([_, p]) => p.cantidad > 0)
@@ -212,8 +234,12 @@ export default class Cl_vPedido {
             .join(", ");
     }
     // --- MÉTODOS ---
-    onEnviarPedido(callback) { this.btEnviar.onclick = callback; }
-    onBuscarPedido(callback) { this.btBuscar.onclick = callback; }
+    onEnviarPedido(callback) {
+        this.btEnviar.onclick = callback;
+    }
+    onBuscarPedido(callback) {
+        this.btBuscar.onclick = callback;
+    }
     setTasa(tasa) {
         this.tasaCambio = tasa;
         this.lblTasa.innerText = tasa.toFixed(2);
@@ -269,13 +295,23 @@ export default class Cl_vPedido {
         this.containerSecciones.classList.remove("oculto");
         document.querySelectorAll(".categoria-bloque").forEach(b => b.classList.add("oculto"));
     }
-    mostrarHistorial(cedula, pedidos) {
+    /**
+     * Renderiza el historial de pedidos de un cliente.
+     * Recibe los totales calculados por parámetro para mantener la vista libre de lógica matemática y de negocio,
+     * de acuerdo con las especificaciones del patrón MVC.
+     */
+    mostrarHistorial(cedula, pedidos, totalUSD, totalBs) {
         if (pedidos.length === 0) {
             this.lblEstadoResultado.innerText = "No se encontraron pedidos.";
             return;
         }
         this.lblEstadoResultado.innerHTML = `
       <h4>Historial para C.I: ${cedula}</h4>
+      <div style="margin: 12px 0; padding: 12px; background-color: #e8f5e9; border-left: 4px solid #2e7d32; border-radius: 8px; font-size: 14px;">
+        <strong>Total Pagado:</strong>
+        <span style="color: #2e7d32; font-weight: bold; margin-left: 5px;">$${totalUSD.toFixed(2)}</span>
+        <span style="color: #1565c0; font-weight: bold; margin-left: 5px;">/ ${totalBs.toFixed(2)} Bs</span>
+      </div>
       <ul class="lista-pedidos">
         ${pedidos.map(p => `
           <li>

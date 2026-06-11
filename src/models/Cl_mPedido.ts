@@ -5,7 +5,7 @@ export default class Cl_mPedido {
   private _resumenProductos: string = "";
   private _montoTotal$: number = 0;
   private _montoTotalBs: number = 0;
-  private _metodoPago: "transferencia" | "pago_movil" | "punto" | "efectivo_usd" | "efectivo_bs" = "transferencia";
+  private _metodoPago: "transferencia" | "pago_movil" | "punto" | "efectivo_usd" | "efectivo_bs" | "pagomovil" | "efectivoUSD" | "efectivoBS" = "transferencia";
   private _cuentaOrigen: string = "";
   private _cuentaDestino: string = "";
   private _referencia: string = "";
@@ -14,7 +14,6 @@ export default class Cl_mPedido {
   private _puntoTipoCuenta: "ahorro" | "corriente" | "" = "";
   private _puntoClave: string = "";
   private _status: "pendiente" | "aceptado" | "rechazado" = "pendiente";
-  private _fecha: string = "";
 
   constructor({
     id,
@@ -31,7 +30,6 @@ export default class Cl_mPedido {
     puntoTipoCuenta = "",
     puntoClave = "",
     status = "pendiente",
-    fecha = "",
   }: {
     id: string;
     cedula: number;
@@ -39,7 +37,7 @@ export default class Cl_mPedido {
     resumenProductos: string;
     montoTotal$: number;
     montoTotalBs: number;
-    metodoPago?: "transferencia" | "pago_movil" | "punto" | "efectivo_usd" | "efectivo_bs";
+    metodoPago?: "transferencia" | "pago_movil" | "punto" | "efectivo_usd" | "efectivo_bs" | "pagomovil" | "efectivoUSD" | "efectivoBS";
     cuentaOrigen?: string;
     cuentaDestino?: string;
     referencia?: string;
@@ -47,7 +45,6 @@ export default class Cl_mPedido {
     puntoTipoCuenta?: "ahorro" | "corriente" | "";
     puntoClave?: string;
     status?: "pendiente" | "aceptado" | "rechazado";
-    fecha?: string;
   }) {
     this.id = id;
     this.cedula = cedula;
@@ -63,54 +60,105 @@ export default class Cl_mPedido {
     this.puntoTipoCuenta = puntoTipoCuenta;
     this.puntoClave = puntoClave;
     this.status = status;
-    this.fecha = fecha;
   }
 
-  public get id(): string { return this._id; }
-  public set id(value: string) { this._id = value; }
+  public get id(): string { 
+    return this._id; 
+  }
+  public set id(value: string) { 
+    this._id = value;
+   }
 
-  public get cedula(): number { return this._cedula; }
-  public set cedula(value: number) { this._cedula = value; }
+  public get cedula(): number {
+     return this._cedula;
+     }
+  public set cedula(value: number) { 
+    this._cedula = value;
+   }
 
-  public get nombre(): string { return this._nombre; }
-  public set nombre(value: string) { this._nombre = value; }
+  public get nombre(): string {
+     return this._nombre;
+     }
+  public set nombre(value: string) { 
+    this._nombre = value; 
+  }
 
-  public get resumenProductos(): string { return this._resumenProductos; }
-  public set resumenProductos(value: string) { this._resumenProductos = value; }
+  public get resumenProductos(): string { 
+    return this._resumenProductos; 
+  }
+  public set resumenProductos(value: string) { 
+    this._resumenProductos = value;
+   }
 
-  public get montoTotal$(): number { return this._montoTotal$; }
-  public set montoTotal$(value: number) { this._montoTotal$ = value; }
+  public get montoTotal$(): number {
+     return this._montoTotal$; 
+    }
+  public set montoTotal$(value: number) {
+     this._montoTotal$ = value;
+     }
 
-  public get montoTotalBs(): number { return this._montoTotalBs; }
-  public set montoTotalBs(value: number) { this._montoTotalBs = value; }
+  public get montoTotalBs(): number { 
+    return this._montoTotalBs;
+   }
+  public set montoTotalBs(value: number) { 
+    this._montoTotalBs = value;
+   }
 
-  public get metodoPago(): "transferencia" | "pago_movil" | "punto" | "efectivo_usd" | "efectivo_bs" { return this._metodoPago; }
-  public set metodoPago(value: "transferencia" | "pago_movil" | "punto" | "efectivo_usd" | "efectivo_bs") { this._metodoPago = value; }
+  public get metodoPago(): "transferencia" | "pago_movil" | "punto" | "efectivo_usd" | "efectivo_bs" | "pagomovil" | "efectivoUSD" | "efectivoBS" {
+      return this._metodoPago; 
+     }
+  public set metodoPago(value: "transferencia" | "pago_movil" | "punto" | "efectivo_usd" | "efectivo_bs" | "pagomovil" | "efectivoUSD" | "efectivoBS") { 
+     this._metodoPago = value; 
+  }
 
-  public get cuentaOrigen(): string { return this._cuentaOrigen; }
-  public set cuentaOrigen(value: string) { this._cuentaOrigen = value; }
+  public get cuentaOrigen(): string { 
+    return this._cuentaOrigen; 
+  }
+  public set cuentaOrigen(value: string) { 
+    this._cuentaOrigen = value; 
+  }
 
-  public get cuentaDestino(): string { return this._cuentaDestino; }
-  public set cuentaDestino(value: string) { this._cuentaDestino = value; }
+  public get cuentaDestino(): string { 
+    return this._cuentaDestino; 
+  }
+  public set cuentaDestino(value: string) { 
+    this._cuentaDestino = value; 
+  }
 
-  public get referencia(): string { return this._referencia; }
-  public set referencia(value: string) { this._referencia = value; }
+  public get referencia(): string { 
+    return this._referencia;
+   }
+  public set referencia(value: string) { 
+    this._referencia = value; 
+  }
 
-  public get puntoCedula(): number { return this._puntoCedula; }
-  public set puntoCedula(value: number) { this._puntoCedula = value; }
+  public get puntoCedula(): number { 
+    return this._puntoCedula; 
+  }
+  public set puntoCedula(value: number) { 
+    this._puntoCedula = value;
+   }
 
-  public get puntoTipoCuenta(): "ahorro" | "corriente" | "" { return this._puntoTipoCuenta; }
-  public set puntoTipoCuenta(value: "ahorro" | "corriente" | "") { this._puntoTipoCuenta = value; }
+  public get puntoTipoCuenta(): "ahorro" | "corriente" | "" {
+     return this._puntoTipoCuenta; 
+    }
+  public set puntoTipoCuenta(value: "ahorro" | "corriente" | "") { 
+    this._puntoTipoCuenta = value;
+   }
 
-  public get puntoClave(): string { return this._puntoClave; }
-  public set puntoClave(value: string) { this._puntoClave = value; }
+  public get puntoClave(): string { 
+    return this._puntoClave;
+   }
+  public set puntoClave(value: string) { 
+    this._puntoClave = value; 
+  }
 
-  public get status(): "pendiente" | "aceptado" | "rechazado" { return this._status; }
-  public set status(value: "pendiente" | "aceptado" | "rechazado") { this._status = value; }
-
-  public get fecha(): string { return this._fecha; }
-  public set fecha(value: string) { this._fecha = value; }
-
+  public get status(): "pendiente" | "aceptado" | "rechazado" { 
+    return this._status; 
+  }
+  public set status(value: "pendiente" | "aceptado" | "rechazado") {
+     this._status = value; 
+    }
   public desglosarCantidades(): { producto: string; cantidad: number }[] {
     const listado: { producto: string; cantidad: number }[] = [];
     if (!this.resumenProductos) return listado;
@@ -147,6 +195,13 @@ export default class Cl_mPedido {
     }
   }
 
+  public static calcularTotalesAceptados(pedidos: any[]): { totalUSD: number; totalBs: number } {
+    const pedidosAceptados = pedidos.filter((p: any) => p.status === "aceptado");
+    const totalUSD = pedidosAceptados.reduce((sum: number, p: any) => sum + (Number(p.montoTotal$) || 0), 0);
+    const totalBs = pedidosAceptados.reduce((sum: number, p: any) => sum + (Number(p.montoTotalBs) || 0), 0);
+    return { totalUSD, totalBs };
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -163,7 +218,6 @@ export default class Cl_mPedido {
       puntoTipoCuenta: this.puntoTipoCuenta,
       puntoClave: this.puntoClave,
       status: this.status,
-      fecha: this.fecha,
     };
   }
 }

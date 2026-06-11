@@ -459,3 +459,19 @@ td small {
 .oculto {
   display: none !important;
 }
+
+/* --- RESULTADO BUSQUEDA CLIENTE --- */
+.resultado-busqueda {
+  margin-top: 18px; 
+  font-size: 14px; 
+  background: #fff; 
+  padding: 16px;
+  border-radius: 10px; 
+  border-left: 4px solid #e65100; 
+  border: 1px solid #f3ede8;
+  display: none;
+}
+
+.resultado-busqueda:not(:empty) { 
+  display: block; 
+}

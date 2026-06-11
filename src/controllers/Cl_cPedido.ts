@@ -3,6 +3,7 @@ import Cl_mPedido from "../models/Cl_mPedido.js";
 import { I_vPedido } from "../interfaces/I_vPedido.js";
 
 export default class Cl_cPedido {
+  // El controlador conecta la Vista (interfaz gráfica) con el Modelo (datos y lógica de negocio)
   private modelo: Cl_mPedido;
   private vista: I_vPedido;
 
@@ -10,21 +11,28 @@ export default class Cl_cPedido {
     this.modelo = modelo;
     this.vista = vista;
 
+    // 1. Carga inicial de datos de la API (tasa, productos, canales de pago)
     this.inicializarApp();
 
-    // Vinculación de escuchadores de eventos mediante callbacks de la UI
+    // 2. Escucha de eventos de la vista mediante Callbacks (funciones de retorno)
     this.vista.onEnviarPedido(() => this.procesarEnvioPedido());
     this.vista.onBuscarPedido(() => this.procesarConsultaEstado());
   }
 
+  /**
+   * Método inicializador: Descarga asíncronamente los datos requeridos por la UI.
+   * Si necesitas añadir un nuevo servicio o configuración inicial, agrégala en esta sección.
+   */
   private async inicializarApp() {
     try {
+      // Descarga paralela usando Promise.all para optimizar el rendimiento
       const [tasa, productos, cuentas] = await Promise.all([
         Cl_sPedido.obtenerTasaDinamica(),
         Cl_sPedido.obtenerProductos(),
         Cl_sPedido.obtenerCuentasDestino()
       ]);
       
+      // Setea los valores resultantes directamente en la Vista
       this.vista.setTasa(tasa);
       this.vista.renderizarMenu(productos);
       this.vista.cargarCuentasDestino(cuentas);
@@ -33,11 +41,16 @@ export default class Cl_cPedido {
     }
   }
 
+  /**
+   * Procesa la confirmación y el envío del pedido.
+   * Realiza validaciones previas de la vista según el método de pago seleccionado
+   * y guarda el pedido en el Modelo para enviarlo a la nube.
+   */
   private async procesarEnvioPedido() {
     const vistaDinamica = this.vista as any;
     const metodoPagoSelected = vistaDinamica.metodoPago;
 
-    // 1. Validaciones previas estrictas según el método de pago seleccionado
+    // [VALIDACIONES] Si agregas un nuevo método de pago o input obligatorio, agrégalo aquí:
     if (metodoPagoSelected === "transferencia") {
       if (!this.vista.cuentaOrigen || !this.vista.referencia) {
         alert("Por favor, complete los datos bancarios de la transferencia antes de enviar.");
@@ -75,7 +88,6 @@ export default class Cl_cPedido {
       const ano = hoy.getFullYear();
       const mes = String(hoy.getMonth() + 1).padStart(2, '0');
       const dia = String(hoy.getDate()).padStart(2, '0');
-      this.modelo.fecha = `${ano}-${mes}-${dia}`;
 
       // Guardamos explícitamente el tipo de pago en la propiedad extendida del modelo
       const modeloDinamico = this.modelo as any;
@@ -119,6 +131,11 @@ export default class Cl_cPedido {
     }
   }
 
+  /**
+   * Procesa la consulta de estado de pedidos de un cliente.
+   * Realiza la llamada de servicio, procesa los totales acumulados (USD y Bs) para los pedidos
+   * que han sido aceptados, y delega a la vista la representación visual de la información.
+   */
   private async procesarConsultaEstado() {
     const cedula = this.vista.cedulaABuscar;
     if (cedula === 0) {
@@ -127,6 +144,10 @@ export default class Cl_cPedido {
     }
     this.vista.lblEstadoResultado.innerText = "Buscando en el sistema...";
     const pedidos = await Cl_sPedido.consultarEstadoPedido(cedula);
-    this.vista.mostrarHistorial(cedula, pedidos);
+
+    // Delegamos el cálculo de totales acumulados al modelo
+    const { totalUSD, totalBs } = Cl_mPedido.calcularTotalesAceptados(pedidos);
+
+    this.vista.mostrarHistorial(cedula, pedidos, totalUSD, totalBs);
   }
 }

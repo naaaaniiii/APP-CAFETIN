@@ -21,7 +21,7 @@ export interface I_vPedido {
   setTasa(tasa: number): void;
   cargarCuentasDestino(cuentas: any[]): void; // Firma estricta compatible con el controlador
   renderizarMenu(productos: any[]): void;
-  mostrarHistorial(cedula: number, pedidos: any[]): void;
+  mostrarHistorial(cedula: number, pedidos: any[], totalUSD: number, totalBs: number): void;
   limpiarFormulario(): void;
 
   // Eventos

@@ -30,7 +30,6 @@ export default class Cafetin {
           cuentaDestino: p.cuentaDestino,
           referencia: p.referencia,
           status: p.status,
-          fecha: p.fecha,
         })
       );
     });
@@ -40,6 +39,27 @@ export default class Cafetin {
     return this._pedidos.length;
   }
 
+  /**
+   * Calcula el monto total en USD pagado por un cliente (solo pedidos aceptados).
+   * Lógica de negocio (Modelo) para mantener los cálculos fuera de la vista y del controlador.
+   * @param cedula Cédula del cliente a consultar
+   */
+  public calcularTotalUSDCliente(cedula: number): number {
+    return this.obtenerPedidosPorCedula(cedula)
+      .filter(p => p.status === "aceptado")
+      .reduce((sum, p) => sum + p.montoTotal$, 0);
+  }
+
+  /**
+   * Calcula el monto total en Bolívares pagado por un cliente (solo pedidos aceptados).
+   * Lógica de negocio (Modelo) para evitar cálculos matemáticos en el controlador o en la vista.
+   * @param cedula Cédula del cliente a consultar
+   */
+  public calcularTotalBsCliente(cedula: number): number {
+    return this.obtenerPedidosPorCedula(cedula)
+      .filter(p => p.status === "aceptado")
+      .reduce((sum, p) => sum + p.montoTotalBs, 0);
+  }
   public calcularPendientes(): number {
     return this._pedidos.filter(p => p.status === "pendiente").length;
   }
@@ -60,23 +80,6 @@ export default class Cafetin {
 
   public calcularMontoAceptadoBs(): number {
     return this.calcularMontoAceptadoUsd() * this._tasaCambio;
-  }
-
-  // MÉTODO PARA CONSULTAR LA CANTIDAD DE PRODUCTOS VENDIDOS EN UNA FECHA INDICADA
-  public calcularCantidadPorProductoYFecha(productoNombre: string, fechaIndicada: string): number {
-    let totalUnidades = 0;
-    const productoBuscar = productoNombre.trim().toLowerCase();
-    this._pedidos.forEach(pedido => {
-      if (pedido.fecha === fechaIndicada && pedido.status === "aceptado") {
-        const desgloses = pedido.desglosarCantidades();
-        desgloses.forEach(item => {
-          if (item.producto.trim().toLowerCase() === productoBuscar) {
-            totalUnidades += item.cantidad;
-          }
-        });
-      }
-    });
-    return totalUnidades;
   }
 
   // MÉTODO CORREGIDO: Cuenta de forma segura sin importar mayúsculas/minúsculas ni espacios vacíos
@@ -112,5 +115,39 @@ export default class Cafetin {
     }
 
     return "Ninguno";
+  }
+
+  public obtenerPedidosPorCedula(cedula: number): Cl_mPedido[] {
+    return this._pedidos.filter(p => p.cedula === cedula);
+  }
+
+  public static formatearCuenta({
+    tipo,
+    banco,
+    titular,
+    numero,
+    cedula,
+  }: {
+    tipo: "transferencia" | "pagomovil";
+    banco: string;
+    titular: string;
+    numero: string;
+    cedula: string;
+  }): any {
+    if (tipo === "transferencia") {
+      return {
+        tipo,
+        banco,
+        titular,
+        numero: `Titular: ${titular} | CI/RIF: ${cedula} | Nro: ${numero}`
+      };
+    } else {
+      return {
+        tipo,
+        banco,
+        titular: `CI/RIF: ${cedula}`,
+        numero: `Tel: ${numero}`
+      };
+    }
   }
 }

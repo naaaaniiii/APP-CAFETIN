@@ -18,11 +18,11 @@ export default class vCafetin {
     grupoNombreTitular;
     lblDinamicoNumero;
     lblCtaCedula;
-    // NUEVOS COMPONENTES HTML
-    txtFechaBuscar;
-    txtProductoBuscar;
-    btnBuscarPorFecha;
-    lblResultadoCantidades;
+    selectBanco;
+    // SELECTORES PARA LA CONSULTA DE CLIENTES
+    inCedulaBuscar;
+    btBuscarCliente;
+    lblResultadoCliente;
     manejadorAccionPedido;
     manejadorEliminarProducto;
     constructor() {
@@ -33,7 +33,7 @@ export default class vCafetin {
         this.inProdPrecio = document.getElementById("admin_inProdPrecio");
         this.inProdCategoria = document.getElementById("admin_inProdCategoria");
         this.btProd = document.getElementById("admin_btProd");
-        this.inCtaBanco = document.getElementById("admin_inCtaBanco");
+        this.inCtaBanco = document.getElementById("admin_selectBanco");
         this.inCtaTitular = document.getElementById("admin_inCtaTitular");
         this.inCtaNumero = document.getElementById("admin_inCtaNumero");
         this.inCtaCedula = document.getElementById("admin_inCtaCedula");
@@ -45,21 +45,14 @@ export default class vCafetin {
         this.grupoNombreTitular = document.getElementById("grupoNombreTitular");
         this.lblDinamicoNumero = document.getElementById("lblDinamicoNumero");
         this.lblCtaCedula = document.getElementById("lblCtaCedula");
-        // Vinculación de los nuevos elementos asignados en el HTML
-        this.txtFechaBuscar = document.getElementById("txtFechaBuscar");
-        this.txtProductoBuscar = document.getElementById("txtProductoBuscar");
-        this.btnBuscarPorFecha = document.getElementById("btnBuscarPorFecha");
-        this.lblResultadoCantidades = document.getElementById("lblResultadoCantidades");
-        if (this.txtFechaBuscar) {
-            this.txtFechaBuscar.value = new Date().toISOString().split('T')[0];
-        }
-        // Escuchador de cambios para alternar las etiquetas y ocultar campos según requerimiento
-        if (this.selectTipoFondo) {
-            this.selectTipoFondo.onchange = () => this.alternarTipoRegistro();
-        }
+        this.selectBanco = document.getElementById("admin_selectBanco");
+        // Inicialización de elementos de búsqueda de cliente
+        this.inCedulaBuscar = document.getElementById("admin_inCedulaBuscar");
+        this.btBuscarCliente = document.getElementById("admin_btBuscarCliente");
+        this.lblResultadoCliente = document.getElementById("admin_lblResultadoCliente");
         // Configuración de la navegación en el panel de administración
         const btnsNav = document.querySelectorAll(".btn-nav-admin");
-        const sections = ["sec-tasa", "sec-producto", "sec-cuenta", "sec-ventas", "sec-menu"];
+        const sections = ["sec-tasa", "sec-producto", "sec-cuenta", "sec-menu", "sec-cliente"];
         const mostrarSeccionAdmin = (targetId) => {
             sections.forEach(id => {
                 const el = document.getElementById(id);
@@ -86,65 +79,107 @@ export default class vCafetin {
         // Iniciar con la sección de tasa visible por defecto
         mostrarSeccionAdmin("sec-tasa");
     }
-    alternarTipoRegistro() {
-        if (this.selectTipoFondo.value === "pagomovil") {
-            this.grupoNombreTitular.classList.add("oculto");
-            this.lblCtaCedula.innerText = "Cédula o RIF:";
-            this.lblDinamicoNumero.innerText = "Número de Teléfono PM:";
-            this.inCtaNumero.placeholder = "Ej. 04141234567";
-        }
-        else {
-            this.grupoNombreTitular.classList.remove("oculto");
-            this.lblCtaCedula.innerText = "Cédula o RIF del Titular:";
-            this.lblDinamicoNumero.innerText = "Número de Cuenta (20 dígitos):";
-            this.inCtaNumero.placeholder = "Ej. 01020000...";
+    onCambiarTipoFondo(callback) {
+        if (this.selectTipoFondo) {
+            this.selectTipoFondo.onchange = callback;
         }
     }
+    mostrarFormularioPagoMovil() {
+        this.grupoNombreTitular.classList.add("oculto");
+        this.lblCtaCedula.innerText = "Cédula o RIF:";
+        this.lblDinamicoNumero.innerText = "Número de Teléfono PM:";
+        this.inCtaNumero.placeholder = "Ej. 04141234567";
+    }
+    mostrarFormularioTransferencia() {
+        this.grupoNombreTitular.classList.remove("oculto");
+        this.lblCtaCedula.innerText = "Cédula o RIF del Titular:";
+        this.lblDinamicoNumero.innerText = "Número de Cuenta (20 dígitos):";
+        this.inCtaNumero.placeholder = "Ej. 01020000...";
+    }
     // --- GETTERS ---
-    get nuevaTasa() { return parseFloat(this.inTasa.value.trim()) || 0; }
-    get prodCodigo() { return this.inProdCodigo.value.trim(); }
-    get prodNombre() { return this.inProdNombre.value.trim(); }
-    get prodPrecio() { return parseFloat(this.inProdPrecio.value.trim()) || 0; }
-    get prodCategoria() { return this.inProdCategoria.value; }
-    get cuentaBanco() { return this.inCtaBanco.value.trim(); }
-    get cuentaTitular() { return this.inCtaTitular.value.trim(); }
-    get cuentaNumero() { return this.inCtaNumero.value.trim(); }
-    get cuentaCedula() { return this.inCtaCedula.value.trim(); }
+    get nuevaTasa() {
+        return parseFloat(this.inTasa.value.trim()) || 0;
+    }
+    get prodCodigo() {
+        return this.inProdCodigo.value.trim();
+    }
+    get prodNombre() {
+        return this.inProdNombre.value.trim();
+    }
+    get prodPrecio() {
+        return parseFloat(this.inProdPrecio.value.trim()) || 0;
+    }
+    get prodCategoria() {
+        return this.inProdCategoria.value;
+    }
+    get cuentaBanco() {
+        return this.inCtaBanco.value.trim();
+    }
+    get cuentaTitular() {
+        return this.inCtaTitular.value.trim();
+    }
+    get cuentaNumero() {
+        return this.inCtaNumero.value.trim();
+    }
+    get cuentaCedula() {
+        return this.inCtaCedula.value.trim();
+    }
     // Getter dinámico para que el controlador conozca la opción activa
     get tipoCuentaRegistrar() {
         return this.selectTipoFondo ? this.selectTipoFondo.value : "transferencia";
     }
-    get fechaBuscar() {
-        return this.txtFechaBuscar ? this.txtFechaBuscar.value : "";
+    // Getters y métodos de búsqueda de cliente
+    get cedulaABuscar() {
+        return parseInt(this.inCedulaBuscar.value.trim()) || 0;
     }
-    get productoBuscar() {
-        return this.txtProductoBuscar ? this.txtProductoBuscar.value.trim() : "";
+    /**
+     * Vincula el evento click del botón de buscar cliente a un callback provisto por el controlador.
+     * Evita lógica del controlador en la vista y mantiene el flujo MVC limpio.
+     */
+    onBuscarCliente(callback) {
+        if (this.btBuscarCliente) {
+            this.btBuscarCliente.onclick = callback;
+        }
+    }
+    mostrarTotalPagadoCliente(cedula, totalUSD, totalBs) {
+        if (cedula === 0) {
+            this.lblResultadoCliente.innerHTML = "";
+            this.lblResultadoCliente.style.display = "none";
+            return;
+        }
+        this.lblResultadoCliente.innerHTML = `
+      <h4>Resultado para C.I: ${cedula}</h4>
+      <div style="margin-top: 10px; padding: 12px; background-color: #e8f5e9; border-left: 4px solid #2e7d32; border-radius: 8px;">
+        <strong>Total Pagado (Aceptado):</strong>
+        <span style="color: #2e7d32; font-weight: bold; margin-left: 5px;">$${totalUSD.toFixed(2)}</span>
+        <span style="color: #1565c0; font-weight: bold; margin-left: 5px;">/ ${totalBs.toFixed(2)} Bs</span>
+      </div>`;
+        this.lblResultadoCliente.style.display = "block";
     }
     // --- MANEJADORES ---
-    onActualizarTasa(callback) { this.btTasa.onclick = callback; }
-    onAgregarProducto(callback) { this.btProd.onclick = callback; }
-    onAgregarCuenta(callback) { this.btCta.onclick = callback; }
-    onEliminarProducto(callback) { this.manejadorEliminarProducto = callback; }
-    onAccionPedido(callback) { this.manejadorAccionPedido = callback; }
-    onBuscarPorFecha(callback) {
-        if (this.btnBuscarPorFecha) {
-            this.btnBuscarPorFecha.onclick = callback;
-        }
+    onActualizarTasa(callback) {
+        this.btTasa.onclick = callback;
     }
-    setTasaActual(tasa) { this.inTasa.value = tasa.toString(); }
-    mostrarCantidadReportada(cantidad, producto, fecha) {
-        if (!this.lblResultadoCantidades)
-            return;
-        if (cantidad === 0) {
-            this.lblResultadoCantidades.innerHTML = `No se vendió "${producto}" el ${fecha}.`;
-            this.lblResultadoCantidades.style.color = "#c62828";
-        }
-        else {
-            this.lblResultadoCantidades.innerHTML = `Vendido de "${producto}" el ${fecha}: <b>${cantidad} unds.</b>`;
-            this.lblResultadoCantidades.style.color = "#2e7d32";
-        }
+    onAgregarProducto(callback) {
+        this.btProd.onclick = callback;
+    }
+    onAgregarCuenta(callback) {
+        this.btCta.onclick = callback;
+    }
+    onEliminarProducto(callback) {
+        this.manejadorEliminarProducto = callback;
+    }
+    onAccionPedido(callback) {
+        this.manejadorAccionPedido = callback;
+    }
+    setTasaActual(tasa) {
+        this.inTasa.value = tasa.toString();
     }
     // --- RENDERIZADO ---
+    /**
+     * Renderiza el panel de estadísticas en la interfaz de administración.
+     * Recibe la información procesada por el controlador/modelo, incluyendo los porcentajes calculados.
+     */
     renderizarEstadisticas(datos) {
         const contenedor = document.getElementById("admin_contenedorEstadisticas");
         if (!contenedor)
@@ -202,21 +237,6 @@ export default class vCafetin {
             this.listaProductos.appendChild(li);
             li.querySelector(".btn-del")?.addEventListener("click", () => this.manejadorEliminarProducto(p.id));
         });
-        // Rellenar dinámicamente el select para la consulta de productos por fecha
-        if (this.txtProductoBuscar) {
-            const valorSeleccionado = this.txtProductoBuscar.value;
-            this.txtProductoBuscar.innerHTML = `<option value="">-- Seleccione un Producto --</option>`;
-            productos.forEach(p => {
-                const option = document.createElement("option");
-                option.value = p.codigo || p.nombre;
-                option.textContent = p.codigo ? `${p.codigo} - ${p.nombre}` : p.nombre;
-                this.txtProductoBuscar.appendChild(option);
-            });
-            // Mantener la selección previa si el producto sigue existiendo
-            if (valorSeleccionado) {
-                this.txtProductoBuscar.value = valorSeleccionado;
-            }
-        }
     }
     limpiarFormProducto() {
         this.inProdCodigo.value = "";
@@ -228,6 +248,7 @@ export default class vCafetin {
         this.inCtaTitular.value = "";
         this.inCtaNumero.value = "";
         this.inCtaCedula.value = "";
+        this.selectBanco.value = "";
     }
 }
 //# sourceMappingURL=Cl_vCafetin.js.map

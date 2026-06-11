@@ -14,8 +14,7 @@ export default class Cl_mPedido {
     _puntoTipoCuenta = "";
     _puntoClave = "";
     _status = "pendiente";
-    _fecha = "";
-    constructor({ id, cedula, nombre, resumenProductos, montoTotal$, montoTotalBs, metodoPago = "transferencia", cuentaOrigen = "", cuentaDestino = "", referencia = "", puntoCedula = 0, puntoTipoCuenta = "", puntoClave = "", status = "pendiente", fecha = "", }) {
+    constructor({ id, cedula, nombre, resumenProductos, montoTotal$, montoTotalBs, metodoPago = "transferencia", cuentaOrigen = "", cuentaDestino = "", referencia = "", puntoCedula = 0, puntoTipoCuenta = "", puntoClave = "", status = "pendiente", }) {
         this.id = id;
         this.cedula = cedula;
         this.nombre = nombre;
@@ -30,38 +29,91 @@ export default class Cl_mPedido {
         this.puntoTipoCuenta = puntoTipoCuenta;
         this.puntoClave = puntoClave;
         this.status = status;
-        this.fecha = fecha;
     }
-    get id() { return this._id; }
-    set id(value) { this._id = value; }
-    get cedula() { return this._cedula; }
-    set cedula(value) { this._cedula = value; }
-    get nombre() { return this._nombre; }
-    set nombre(value) { this._nombre = value; }
-    get resumenProductos() { return this._resumenProductos; }
-    set resumenProductos(value) { this._resumenProductos = value; }
-    get montoTotal$() { return this._montoTotal$; }
-    set montoTotal$(value) { this._montoTotal$ = value; }
-    get montoTotalBs() { return this._montoTotalBs; }
-    set montoTotalBs(value) { this._montoTotalBs = value; }
-    get metodoPago() { return this._metodoPago; }
-    set metodoPago(value) { this._metodoPago = value; }
-    get cuentaOrigen() { return this._cuentaOrigen; }
-    set cuentaOrigen(value) { this._cuentaOrigen = value; }
-    get cuentaDestino() { return this._cuentaDestino; }
-    set cuentaDestino(value) { this._cuentaDestino = value; }
-    get referencia() { return this._referencia; }
-    set referencia(value) { this._referencia = value; }
-    get puntoCedula() { return this._puntoCedula; }
-    set puntoCedula(value) { this._puntoCedula = value; }
-    get puntoTipoCuenta() { return this._puntoTipoCuenta; }
-    set puntoTipoCuenta(value) { this._puntoTipoCuenta = value; }
-    get puntoClave() { return this._puntoClave; }
-    set puntoClave(value) { this._puntoClave = value; }
-    get status() { return this._status; }
-    set status(value) { this._status = value; }
-    get fecha() { return this._fecha; }
-    set fecha(value) { this._fecha = value; }
+    get id() {
+        return this._id;
+    }
+    set id(value) {
+        this._id = value;
+    }
+    get cedula() {
+        return this._cedula;
+    }
+    set cedula(value) {
+        this._cedula = value;
+    }
+    get nombre() {
+        return this._nombre;
+    }
+    set nombre(value) {
+        this._nombre = value;
+    }
+    get resumenProductos() {
+        return this._resumenProductos;
+    }
+    set resumenProductos(value) {
+        this._resumenProductos = value;
+    }
+    get montoTotal$() {
+        return this._montoTotal$;
+    }
+    set montoTotal$(value) {
+        this._montoTotal$ = value;
+    }
+    get montoTotalBs() {
+        return this._montoTotalBs;
+    }
+    set montoTotalBs(value) {
+        this._montoTotalBs = value;
+    }
+    get metodoPago() {
+        return this._metodoPago;
+    }
+    set metodoPago(value) {
+        this._metodoPago = value;
+    }
+    get cuentaOrigen() {
+        return this._cuentaOrigen;
+    }
+    set cuentaOrigen(value) {
+        this._cuentaOrigen = value;
+    }
+    get cuentaDestino() {
+        return this._cuentaDestino;
+    }
+    set cuentaDestino(value) {
+        this._cuentaDestino = value;
+    }
+    get referencia() {
+        return this._referencia;
+    }
+    set referencia(value) {
+        this._referencia = value;
+    }
+    get puntoCedula() {
+        return this._puntoCedula;
+    }
+    set puntoCedula(value) {
+        this._puntoCedula = value;
+    }
+    get puntoTipoCuenta() {
+        return this._puntoTipoCuenta;
+    }
+    set puntoTipoCuenta(value) {
+        this._puntoTipoCuenta = value;
+    }
+    get puntoClave() {
+        return this._puntoClave;
+    }
+    set puntoClave(value) {
+        this._puntoClave = value;
+    }
+    get status() {
+        return this._status;
+    }
+    set status(value) {
+        this._status = value;
+    }
     desglosarCantidades() {
         const listado = [];
         if (!this.resumenProductos)
@@ -101,6 +153,12 @@ export default class Cl_mPedido {
             listado.push({ producto: str, cantidad: 1 });
         }
     }
+    static calcularTotalesAceptados(pedidos) {
+        const pedidosAceptados = pedidos.filter((p) => p.status === "aceptado");
+        const totalUSD = pedidosAceptados.reduce((sum, p) => sum + (Number(p.montoTotal$) || 0), 0);
+        const totalBs = pedidosAceptados.reduce((sum, p) => sum + (Number(p.montoTotalBs) || 0), 0);
+        return { totalUSD, totalBs };
+    }
     toJSON() {
         return {
             id: this.id,
@@ -117,7 +175,6 @@ export default class Cl_mPedido {
             puntoTipoCuenta: this.puntoTipoCuenta,
             puntoClave: this.puntoClave,
             status: this.status,
-            fecha: this.fecha,
         };
     }
 }

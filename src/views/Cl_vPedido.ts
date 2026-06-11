@@ -203,21 +203,43 @@ export default class Cl_vPedido implements I_vPedido {
   }
 
   // --- GETTERS ---
-  get cedula(): number { return parseInt(this.inCedula.value.trim()) || 0; }
-  get nombre(): string { return this.inNombre.value.trim(); }
-  get montoTotal$(): number { return this.totalUSD; }
-  get montoTotalBs(): number { return this.totalBS; }
-  get cuentaOrigen(): string { return this.inCuentaOrigen.value.trim(); }
-  get cuentaDestino(): string { return this.inCuentaDestino.value; }
-  get referencia(): string { return this.inReferencia.value.trim(); }
-  get cedulaABuscar(): number { return parseInt(this.inCedulaBuscar.value.trim()) || 0; }
+  get cedula(): number { 
+    return parseInt(this.inCedula.value.trim()) || 0; 
+  }
+  get nombre(): string {
+     return this.inNombre.value.trim();
+     }
+  get montoTotal$(): number {
+     return this.totalUSD; 
+    }
+  get montoTotalBs(): number { 
+    return this.totalBS;
+   }
+  get cuentaOrigen(): string { 
+    return this.inCuentaOrigen.value.trim(); 
+  }
+  get cuentaDestino(): string {
+     return this.inCuentaDestino.value; 
+    }
+  get referencia(): string {
+     return this.inReferencia.value.trim();
+     }
+  get cedulaABuscar(): number { 
+    return parseInt(this.inCedulaBuscar.value.trim()) || 0;
+   }
   
   get metodoPago(): "transferencia" | "pagomovil" | "punto" | "efectivoUSD" | "efectivoBS" {
     return this.selectMetodoPago.value as any;
   }
-  get puntoCedula(): number { return parseInt(this.inPuntoCedula.value.trim()) || 0; }
-  get puntoClave(): string { return this.inPuntoClave.value.trim(); }
-  get puntoTipoCuenta(): "ahorro" | "corriente" { return this.selectPuntoTipo.value as any; }
+  get puntoCedula(): number { 
+    return parseInt(this.inPuntoCedula.value.trim()) || 0; 
+  }
+  get puntoClave(): string { 
+    return this.inPuntoClave.value.trim(); 
+  }
+  get puntoTipoCuenta(): "ahorro" | "corriente" {
+     return this.selectPuntoTipo.value as any;
+     }
 
   get resumenProductos(): string {
     return Object.entries(this.carrito)
@@ -227,8 +249,12 @@ export default class Cl_vPedido implements I_vPedido {
   }
 
   // --- MÉTODOS ---
-  onEnviarPedido(callback: () => void): void { this.btEnviar.onclick = callback; }
-  onBuscarPedido(callback: () => void): void { this.btBuscar.onclick = callback; }
+  onEnviarPedido(callback: () => void): void {
+     this.btEnviar.onclick = callback;
+     }
+  onBuscarPedido(callback: () => void): void {
+     this.btBuscar.onclick = callback; 
+    }
 
   setTasa(tasa: number): void {
     this.tasaCambio = tasa;
@@ -292,13 +318,24 @@ export default class Cl_vPedido implements I_vPedido {
     document.querySelectorAll(".categoria-bloque").forEach(b => b.classList.add("oculto"));
   }
 
-  mostrarHistorial(cedula: number, pedidos: any[]): void {
+  /**
+   * Renderiza el historial de pedidos de un cliente.
+   * Recibe los totales calculados por parámetro para mantener la vista libre de lógica matemática y de negocio,
+   * de acuerdo con las especificaciones del patrón MVC.
+   */
+  mostrarHistorial(cedula: number, pedidos: any[], totalUSD: number, totalBs: number): void {
     if (pedidos.length === 0) {
       this.lblEstadoResultado.innerText = "No se encontraron pedidos.";
       return;
     }
+
     this.lblEstadoResultado.innerHTML = `
       <h4>Historial para C.I: ${cedula}</h4>
+      <div style="margin: 12px 0; padding: 12px; background-color: #e8f5e9; border-left: 4px solid #2e7d32; border-radius: 8px; font-size: 14px;">
+        <strong>Total Pagado:</strong>
+        <span style="color: #2e7d32; font-weight: bold; margin-left: 5px;">$${totalUSD.toFixed(2)}</span>
+        <span style="color: #1565c0; font-weight: bold; margin-left: 5px;">/ ${totalBs.toFixed(2)} Bs</span>
+      </div>
       <ul class="lista-pedidos">
         ${pedidos.map(p => `
           <li>

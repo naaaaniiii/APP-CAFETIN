@@ -147,7 +147,34 @@
           <div class="formulario-linea" style="margin-top: 15px;">
             <div class="grupo-input">
               <label for="pedido_inCuentaOrigen">Banco Emisor (Origen):</label>
-              <input type="text" id="pedido_inCuentaOrigen" placeholder="Ej. Banesco, BDV" />
+              <select id="pedido_inCuentaOrigen">
+                <option value="" disabled selected>---Seleccione un Banco---</option>
+                <option value="BANCO DE VENEZUELA">0102 - BANCO DE VENEZUELA</option> 
+                <option value="100% BANCO">0156 - 100% BANCO</option>
+                <option value="BANCAMIGA BANCO UNIVERSAL, C.A.">0172 - BANCAMIGA BANCO UNIVERSAL, C.A.</option>
+                <option value="BANCARIBE">0114 - BANCARIBE</option>
+                <option value="BANCO ACTIVO">0171 - BANCO ACTIVO</option>
+                <option value="BANCO CARONI">0128 - BANCO CARONÍ</option>
+                <option value="BANCO DEL TESORO">0163 - BANCO DEL TESORO</option>
+                <option value="BANCO DIGITAL DE LOS TRABAJADORES, BANCO UNIVERSAL">0175 - BANCO DIGITAL DE LOS TRABAJADORES, BANCO UNIVERSAL</option>
+                <option value="BANCO EXTERIOR">0115 - BANCO EXTERIOR</option>
+                <option value="BANCO FONDO COMUN">0151 - BANCO FONDO COMÚN</option>
+                <option value="BANCO MERCANTIL">0105 - BANCO MERCANTIL</option>
+                <option value="BANCO NACIONAL DE CREDITO">0191 - BANCO NACIONAL DE CREDITO</option>
+                <option value="BANCO VENEZOLANO DE CREDITO">0104 - BANCO VENEZOLANO DE CREDITO</option>
+                <option value="BANCO PLAZA">0138 - BANCO PLAZA</option>
+                <option value="BANCO SOFITASA">0137 - BANCO SOFITASA</option>
+                <option value="BANCRECER">0168 - BANCRECER</option>
+                <option value="BANESCO">0134 - BANESCO</option>
+                <option value="BANFANB">0177 - BANFANB</option>
+                <option value="BANGENTE">0146 - BANGENTE</option>
+                <option value="BBVA PROVINCIAL">0108 - BBVA PROVINCIAL</option>
+                <option value="BANPLUS">0174 - BANPLUS</option>
+                <option value="DELSUR BANCO UNIVERSAL">0157 - DELSUR BANCO UNIVERSAL</option>
+                <option value="INSTITUTO MUNICIPAL DE CREDITO POPULAR">0601 - INSTITUTO MUNICIPAL DE CREDITO POPULAR</option>
+                <option value="N58 BANCO DIGITAL BANCO MICROFINANCIERO S A">0178 - N58 BANCO DIGITAL BANCO MICROFINANCIERO S A</option>
+                <option value="R4 BANCO MICROFINANCIERO C.A.">0169 - R4 BANCO MICROFINANCIERO C.A.</option>
+              </select>
             </div>
             <div class="grupo-input">
               <label for="pedido_inReferencia">Nro. de Referencia (Últimos 4 dígitos):</label>
@@ -169,7 +196,7 @@
           </div>
 
           <div class="grupo-input" style="margin-bottom: 12px;">
-            <label for="pedido_inPuntoCedula">Cédula del Tarjetahabiente:</label>
+            <label for="pedido_inPuntoCedula">Cédula del Titular:</label>
             <input type="number" id="pedido_inPuntoCedula" placeholder="Ej. 27123456" />
           </div>
           

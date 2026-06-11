@@ -8,7 +8,7 @@ export default class vCafetin implements I_vCafetin {
   private inProdPrecio: HTMLInputElement;
   private inProdCategoria: HTMLSelectElement;
   private btProd: HTMLButtonElement;
-  private inCtaBanco: HTMLInputElement;
+  private inCtaBanco: HTMLSelectElement;
   private inCtaTitular: HTMLInputElement;
   private inCtaNumero: HTMLInputElement;
   private inCtaCedula: HTMLInputElement;
@@ -21,12 +21,12 @@ export default class vCafetin implements I_vCafetin {
   private grupoNombreTitular: HTMLElement;
   private lblDinamicoNumero: HTMLElement;
   private lblCtaCedula: HTMLElement;
+  private selectBanco: HTMLSelectElement;
 
-  // NUEVOS COMPONENTES HTML
-  private txtFechaBuscar: HTMLInputElement;
-  private txtProductoBuscar: HTMLSelectElement;
-  private btnBuscarPorFecha: HTMLButtonElement;
-  private lblResultadoCantidades: HTMLElement;
+  // SELECTORES PARA LA CONSULTA DE CLIENTES
+  private inCedulaBuscar: HTMLInputElement;
+  private btBuscarCliente: HTMLButtonElement;
+  private lblResultadoCliente: HTMLElement;
 
   private manejadorAccionPedido!: (id: string, accion: "aceptado" | "rechazado") => void;
   private manejadorEliminarProducto!: (id: string) => void;
@@ -39,7 +39,7 @@ export default class vCafetin implements I_vCafetin {
     this.inProdPrecio = document.getElementById("admin_inProdPrecio") as HTMLInputElement;
     this.inProdCategoria = document.getElementById("admin_inProdCategoria") as HTMLSelectElement;
     this.btProd = document.getElementById("admin_btProd") as HTMLButtonElement;
-    this.inCtaBanco = document.getElementById("admin_inCtaBanco") as HTMLInputElement;
+    this.inCtaBanco = document.getElementById("admin_selectBanco") as HTMLSelectElement;
     this.inCtaTitular = document.getElementById("admin_inCtaTitular") as HTMLInputElement;
     this.inCtaNumero = document.getElementById("admin_inCtaNumero") as HTMLInputElement;
     this.inCtaCedula = document.getElementById("admin_inCtaCedula") as HTMLInputElement;
@@ -52,25 +52,16 @@ export default class vCafetin implements I_vCafetin {
     this.grupoNombreTitular = document.getElementById("grupoNombreTitular") as HTMLElement;
     this.lblDinamicoNumero = document.getElementById("lblDinamicoNumero") as HTMLElement;
     this.lblCtaCedula = document.getElementById("lblCtaCedula") as HTMLElement;
-
-    // Vinculación de los nuevos elementos asignados en el HTML
-    this.txtFechaBuscar = document.getElementById("txtFechaBuscar") as HTMLInputElement;
-    this.txtProductoBuscar = document.getElementById("txtProductoBuscar") as HTMLSelectElement;
-    this.btnBuscarPorFecha = document.getElementById("btnBuscarPorFecha") as HTMLButtonElement;
-    this.lblResultadoCantidades = document.getElementById("lblResultadoCantidades") as HTMLElement;
-
-    if (this.txtFechaBuscar) {
-      this.txtFechaBuscar.value = new Date().toISOString().split('T')[0];
-    }
-
-    // Escuchador de cambios para alternar las etiquetas y ocultar campos según requerimiento
-    if (this.selectTipoFondo) {
-      this.selectTipoFondo.onchange = () => this.alternarTipoRegistro();
-    }
+    this.selectBanco = document.getElementById("admin_selectBanco") as HTMLSelectElement;
+    
+    // Inicialización de elementos de búsqueda de cliente
+    this.inCedulaBuscar = document.getElementById("admin_inCedulaBuscar") as HTMLInputElement;
+    this.btBuscarCliente = document.getElementById("admin_btBuscarCliente") as HTMLButtonElement;
+    this.lblResultadoCliente = document.getElementById("admin_lblResultadoCliente") as HTMLElement;
 
     // Configuración de la navegación en el panel de administración
     const btnsNav = document.querySelectorAll(".btn-nav-admin");
-    const sections = ["sec-tasa", "sec-producto", "sec-cuenta", "sec-ventas", "sec-menu"];
+    const sections = ["sec-tasa", "sec-producto", "sec-cuenta","sec-menu", "sec-cliente"];
 
     const mostrarSeccionAdmin = (targetId: string) => {
       sections.forEach(id => {
@@ -100,71 +91,114 @@ export default class vCafetin implements I_vCafetin {
     mostrarSeccionAdmin("sec-tasa");
   }
 
-  private alternarTipoRegistro(): void {
-    if (this.selectTipoFondo.value === "pagomovil") {
-      this.grupoNombreTitular.classList.add("oculto");
-      this.lblCtaCedula.innerText = "Cédula o RIF:";
-      this.lblDinamicoNumero.innerText = "Número de Teléfono PM:";
-      this.inCtaNumero.placeholder = "Ej. 04141234567";
-    } else {
-      this.grupoNombreTitular.classList.remove("oculto");
-      this.lblCtaCedula.innerText = "Cédula o RIF del Titular:";
-      this.lblDinamicoNumero.innerText = "Número de Cuenta (20 dígitos):";
-      this.inCtaNumero.placeholder = "Ej. 01020000...";
+  onCambiarTipoFondo(callback: () => void): void {
+    if (this.selectTipoFondo) {
+      this.selectTipoFondo.onchange = callback;
     }
   }
 
+  mostrarFormularioPagoMovil(): void {
+    this.grupoNombreTitular.classList.add("oculto");
+    this.lblCtaCedula.innerText = "Cédula o RIF:";
+    this.lblDinamicoNumero.innerText = "Número de Teléfono PM:";
+    this.inCtaNumero.placeholder = "Ej. 04141234567";
+  }
+
+  mostrarFormularioTransferencia(): void {
+    this.grupoNombreTitular.classList.remove("oculto");
+    this.lblCtaCedula.innerText = "Cédula o RIF del Titular:";
+    this.lblDinamicoNumero.innerText = "Número de Cuenta (20 dígitos):";
+    this.inCtaNumero.placeholder = "Ej. 01020000...";
+  }
+
   // --- GETTERS ---
-  get nuevaTasa(): number { return parseFloat(this.inTasa.value.trim()) || 0; }
-  get prodCodigo(): string { return this.inProdCodigo.value.trim(); }
-  get prodNombre(): string { return this.inProdNombre.value.trim(); }
-  get prodPrecio(): number { return parseFloat(this.inProdPrecio.value.trim()) || 0; }
-  get prodCategoria(): string { return this.inProdCategoria.value; }
-  get cuentaBanco(): string { return this.inCtaBanco.value.trim(); }
-  get cuentaTitular(): string { return this.inCtaTitular.value.trim(); }
-  get cuentaNumero(): string { return this.inCtaNumero.value.trim(); }
-  get cuentaCedula(): string { return this.inCtaCedula.value.trim(); }
+  get nuevaTasa(): number { 
+    return parseFloat(this.inTasa.value.trim()) || 0; 
+  }
+  get prodCodigo(): string {
+     return this.inProdCodigo.value.trim(); 
+    }
+  get prodNombre(): string {
+     return this.inProdNombre.value.trim(); 
+    }
+  get prodPrecio(): number { 
+    return parseFloat(this.inProdPrecio.value.trim()) || 0; 
+  }
+  get prodCategoria(): string { 
+    return this.inProdCategoria.value; 
+  }
+  get cuentaBanco(): string { 
+    return this.inCtaBanco.value.trim();
+   }
+  get cuentaTitular(): string {
+     return this.inCtaTitular.value.trim();
+     }
+  get cuentaNumero(): string {
+     return this.inCtaNumero.value.trim(); 
+    }
+  get cuentaCedula(): string { 
+    return this.inCtaCedula.value.trim(); 
+  }
   
   // Getter dinámico para que el controlador conozca la opción activa
   get tipoCuentaRegistrar(): "transferencia" | "pagomovil" {
     return this.selectTipoFondo ? (this.selectTipoFondo.value as any) : "transferencia";
   }
 
-  get fechaBuscar(): string { 
-    return this.txtFechaBuscar ? this.txtFechaBuscar.value : ""; 
+  // Getters y métodos de búsqueda de cliente
+  get cedulaABuscar(): number {
+    return parseInt(this.inCedulaBuscar.value.trim()) || 0;
   }
-  
-  get productoBuscar(): string { 
-    return this.txtProductoBuscar ? this.txtProductoBuscar.value.trim() : ""; 
+
+  /**
+   * Vincula el evento click del botón de buscar cliente a un callback provisto por el controlador.
+   * Evita lógica del controlador en la vista y mantiene el flujo MVC limpio.
+   */
+  onBuscarCliente(callback: () => void): void {
+    if (this.btBuscarCliente) {
+      this.btBuscarCliente.onclick = callback;
+    }
+  }
+  mostrarTotalPagadoCliente(cedula: number, totalUSD: number, totalBs: number): void {
+    if (cedula === 0) {
+      this.lblResultadoCliente.innerHTML = "";
+      this.lblResultadoCliente.style.display = "none";
+      return;
+    }
+    this.lblResultadoCliente.innerHTML = `
+      <h4>Resultado para C.I: ${cedula}</h4>
+      <div style="margin-top: 10px; padding: 12px; background-color: #e8f5e9; border-left: 4px solid #2e7d32; border-radius: 8px;">
+        <strong>Total Pagado (Aceptado):</strong>
+        <span style="color: #2e7d32; font-weight: bold; margin-left: 5px;">$${totalUSD.toFixed(2)}</span>
+        <span style="color: #1565c0; font-weight: bold; margin-left: 5px;">/ ${totalBs.toFixed(2)} Bs</span>
+      </div>`;
+    this.lblResultadoCliente.style.display = "block";
   }
 
   // --- MANEJADORES ---
-  onActualizarTasa(callback: () => void): void { this.btTasa.onclick = callback; }
-  onAgregarProducto(callback: () => void): void { this.btProd.onclick = callback; }
-  onAgregarCuenta(callback: () => void): void { this.btCta.onclick = callback; }
-  onEliminarProducto(callback: (id: string) => void): void { this.manejadorEliminarProducto = callback; }
-  onAccionPedido(callback: (id: string, accion: "aceptado" | "rechazado") => void): void { this.manejadorAccionPedido = callback; }
-  
-  onBuscarPorFecha(callback: () => void): void {
-    if (this.btnBuscarPorFecha) {
-      this.btnBuscarPorFecha.onclick = callback;
+  onActualizarTasa(callback: () => void): void {
+      this.btTasa.onclick = callback; 
     }
+  onAgregarProducto(callback: () => void): void { 
+    this.btProd.onclick = callback; 
   }
-
-  setTasaActual(tasa: number): void { this.inTasa.value = tasa.toString(); }
-
-  mostrarCantidadReportada(cantidad: number, producto: string, fecha: string): void {
-    if (!this.lblResultadoCantidades) return;
-    if (cantidad === 0) {
-      this.lblResultadoCantidades.innerHTML = `No se vendió "${producto}" el ${fecha}.`;
-      this.lblResultadoCantidades.style.color = "#c62828";
-    } else {
-      this.lblResultadoCantidades.innerHTML = `Vendido de "${producto}" el ${fecha}: <b>${cantidad} unds.</b>`;
-      this.lblResultadoCantidades.style.color = "#2e7d32";
+  onAgregarCuenta(callback: () => void): void { 
+    this.btCta.onclick = callback;
+   }
+  onEliminarProducto(callback: (id: string) => void): void {
+     this.manejadorEliminarProducto = callback; 
     }
+  onAccionPedido(callback: (id: string, accion: "aceptado" | "rechazado") => void): void { 
+    this.manejadorAccionPedido = callback;
+   }
+  setTasaActual(tasa: number): void { 
+    this.inTasa.value = tasa.toString(); 
   }
-
   // --- RENDERIZADO ---
+  /**
+   * Renderiza el panel de estadísticas en la interfaz de administración.
+   * Recibe la información procesada por el controlador/modelo, incluyendo los porcentajes calculados.
+   */
   public renderizarEstadisticas(datos: any): void {
     const contenedor = document.getElementById("admin_contenedorEstadisticas");
     if (!contenedor) return;
@@ -227,22 +261,6 @@ export default class vCafetin implements I_vCafetin {
       this.listaProductos.appendChild(li);
       li.querySelector(".btn-del")?.addEventListener("click", () => this.manejadorEliminarProducto(p.id));
     });
-
-    // Rellenar dinámicamente el select para la consulta de productos por fecha
-    if (this.txtProductoBuscar) {
-      const valorSeleccionado = this.txtProductoBuscar.value;
-      this.txtProductoBuscar.innerHTML = `<option value="">-- Seleccione un Producto --</option>`;
-      productos.forEach(p => {
-        const option = document.createElement("option");
-        option.value = p.codigo || p.nombre;
-        option.textContent = p.codigo ? `${p.codigo} - ${p.nombre}` : p.nombre;
-        this.txtProductoBuscar.appendChild(option);
-      });
-      // Mantener la selección previa si el producto sigue existiendo
-      if (valorSeleccionado) {
-        this.txtProductoBuscar.value = valorSeleccionado;
-      }
-    }
   }
 
   limpiarFormProducto(): void { 
@@ -256,5 +274,6 @@ export default class vCafetin implements I_vCafetin {
     this.inCtaTitular.value = "";
     this.inCtaNumero.value = "";
     this.inCtaCedula.value = "";
+    this.selectBanco.value = "";
   }
 }

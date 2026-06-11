@@ -19,7 +19,8 @@ export default class Cl_cCafetin {
     this.vista.onAgregarCuenta(() => this.procesarCuenta());
     this.vista.onAccionPedido((id, accion) => this.procesarAccionPedido(id, accion));
     this.vista.onEliminarProducto((id) => this.procesarEliminarProducto(id));
-    this.vista.onBuscarPorFecha(() => this.procesarBusquedaPorFecha());
+    this.vista.onBuscarCliente(() => this.procesarBuscarCliente());
+    this.vista.onCambiarTipoFondo(() => this.procesarCambioTipoFondo());
   }
 
   private async inicializarDashboard() {
@@ -56,18 +57,6 @@ export default class Cl_cCafetin {
       console.error("Error al refrescar las métricas operativas:", error);
     }
   }
-
-  private procesarBusquedaPorFecha() {
-    const producto = this.vista.productoBuscar;
-    const fecha = this.vista.fechaBuscar;
-    if (!producto) {
-      alert("Por favor, ingrese el nombre del producto.");
-      return;
-    }
-    const cantidadCalculada = this.modelo.calcularCantidadPorProductoYFecha(producto, fecha);
-    this.vista.mostrarCantidadReportada(cantidadCalculada, producto, fecha);
-  }
-
   private async procesarAccionPedido(id: string, accion: "aceptado" | "rechazado") {
     if (!confirm(`¿Confirmar acción: ${accion.toUpperCase()} para la orden #${id}?`)) return;
     try {
@@ -129,12 +118,13 @@ export default class Cl_cCafetin {
         return;
       }
       
-      const cta = {
+      const cta = Cl_mCafetin.formatearCuenta({
         tipo: "transferencia",
         banco: this.vista.cuentaBanco,
         titular: this.vista.cuentaTitular,
-        numero: `Titular: ${this.vista.cuentaTitular} | CI/RIF: ${this.vista.cuentaCedula} | Nro: ${this.vista.cuentaNumero}`
-      };
+        numero: this.vista.cuentaNumero,
+        cedula: this.vista.cuentaCedula,
+      });
 
       try {
         if (await Cl_sCafetin.agregarCuenta(cta)) {
@@ -151,12 +141,13 @@ export default class Cl_cCafetin {
         return;
       }
 
-      const ctaPM = {
+      const ctaPM = Cl_mCafetin.formatearCuenta({
         tipo: "pagomovil",
         banco: this.vista.cuentaBanco,
-        titular: `CI/RIF: ${this.vista.cuentaCedula}`,
-        numero: `Tel: ${this.vista.cuentaNumero}`
-      };
+        titular: "",
+        numero: this.vista.cuentaNumero,
+        cedula: this.vista.cuentaCedula,
+      });
 
       try {
         if (await Cl_sCafetin.agregarCuenta(ctaPM)) {
@@ -179,6 +170,32 @@ export default class Cl_cCafetin {
       }
     } catch {
       alert("Error al intentar dar de baja el producto.");
+    }
+  }
+
+  /**
+   * Procesa la consulta del total pagado por un cliente.
+   * Coordina el flujo obteniendo la cédula desde la Vista, invocando los métodos del Modelo
+   * para efectuar el cálculo del total (USD y Bs), y enviando los resultados de vuelta a la Vista para su visualización.
+   */
+  private procesarBuscarCliente() {
+    const cedula = this.vista.cedulaABuscar;
+    if (cedula === 0) {
+      alert("Por favor, introduzca una cédula válida.");
+      return;
+    }
+    const totalUSD = this.modelo.calcularTotalUSDCliente(cedula);
+    const totalBs = this.modelo.calcularTotalBsCliente(cedula);
+
+    this.vista.mostrarTotalPagadoCliente(cedula, totalUSD, totalBs);
+  }
+
+  private procesarCambioTipoFondo() {
+    const tipo = this.vista.tipoCuentaRegistrar;
+    if (tipo === "pagomovil") {
+      this.vista.mostrarFormularioPagoMovil();
+    } else {
+      this.vista.mostrarFormularioTransferencia();
     }
   }
 }
