@@ -2,10 +2,19 @@ import Cl_sPedido from "../services/Cl_sPedido.js";
 import Cl_mPedido from "../models/Cl_mPedido.js";
 import { I_vPedido } from "../interfaces/I_vPedido.js";
 
+/**
+ * Controlador del Pedido (Cl_cPedido)
+ * 
+ * RESPONSABILIDAD:
+ * Si hay instrucciones que son de toma de decisión, eso va en el controlador.
+ * Decide el flujo del sistema: escucha a la vista, delega cálculos al modelo,
+ * y luego decide qué información enviarle a la vista para que la muestre.
+ */
 export default class Cl_cPedido {
   // El controlador conecta la Vista (interfaz gráfica) con el Modelo (datos y lógica de negocio)
   private modelo: Cl_mPedido;
   private vista: I_vPedido;
+  private tasaUSD: number = 1;
 
   constructor({ modelo, vista }: { modelo: Cl_mPedido; vista: I_vPedido }) {
     this.modelo = modelo;
@@ -17,6 +26,8 @@ export default class Cl_cPedido {
     // 2. Escucha de eventos de la vista mediante Callbacks (funciones de retorno)
     this.vista.onEnviarPedido(() => this.procesarEnvioPedido());
     this.vista.onBuscarPedido(() => this.procesarConsultaEstado());
+    this.vista.onModificarCantidadCarrito((id, incremento) => this.procesarModificarCantidadCarrito(id, incremento));
+    this.vista.onProcederPago(() => this.procesarProcederPago());
   }
 
   /**
@@ -32,8 +43,11 @@ export default class Cl_cPedido {
         Cl_sPedido.obtenerCuentasDestino()
       ]);
       
+      this.tasaUSD = tasa;
+      this.modelo.inicializarCarrito(productos);
+
       // Setea los valores resultantes directamente en la Vista
-      this.vista.setTasa(tasa);
+      this.vista.setTasaUSD(tasa);
       this.vista.renderizarMenu(productos);
       this.vista.cargarCuentasDestino(cuentas);
     } catch (error) {
@@ -42,15 +56,51 @@ export default class Cl_cPedido {
   }
 
   /**
-   * Procesa la confirmación y el envío del pedido.
-   * Realiza validaciones previas de la vista según el método de pago seleccionado
-   * y guarda el pedido en el Modelo para enviarlo a la nube.
+   * TOMA DE DECISIÓN: Qué hacer cuando el usuario suma/resta en el carritoCarrito.
+   * El controlador decide:
+   * 1. Pedirle al modelo que actualice la cantidad internamente.
+   * 2. Pedirle al modelo que calcule los nuevos totales (matemática).
+   * 3. Ordenarle a la vista que actualice sus espacios visuales.
+   */
+  private procesarModificarCantidadCarrito(id: string, incremento: number) {
+    this.modelo.actualizarCantidadCarrito(id, incremento);
+    const cantidad = this.modelo.obtenerCantidadCarrito(id);
+    this.vista.actualizarCantidadCarritoUI(id, cantidad);
+
+    const totalUSD = this.modelo.calcularTotalUSD();
+    const totalBs = this.modelo.calcularTotalBs(this.tasaUSD);
+    this.vista.actualizarFacturaUI(totalUSD, totalBs);
+  }
+
+  /**
+   * TOMA DE DECISIÓN: Validar antes de proceder al pago.
+   * El controlador decide si deja pasar al usuario o le muestra una alerta.
+   */
+  private procesarProcederPago() {
+    const cedula = this.vista.cedula;
+    const nombre = this.vista.nombre;
+    if (cedula === 0 || nombre === "") {
+      alert("Por favor introduce tu cédula y nombre antes de continuar.");
+      return;
+    }
+    const totalUSD = this.modelo.calcularTotalUSD();
+    if (totalUSD > 0) {
+      this.vista.mostrarSeccionPago();
+    } else {
+      alert("Debes agregar al menos un producto al carrito.");
+    }
+  }
+
+  /**
+   * TOMA DE DECISIÓN: Flujo de envío de pedido.
+   * El controlador verifica múltiples reglas de decisión dependiendo del método de pago,
+   * y luego delega al modelo la sincronización de la data antes de enviarla.
    */
   private async procesarEnvioPedido() {
     const vistaDinamica = this.vista as any;
     const metodoPagoSelected = vistaDinamica.metodoPago;
 
-    // [VALIDACIONES] Si agregas un nuevo método de pago o input obligatorio, agrégalo aquí:
+    // [TOMA DE DECISIÓN] Validaciones requeridas según método de pago
     if (metodoPagoSelected === "transferencia") {
       if (!this.vista.cuentaOrigen || !this.vista.referencia) {
         alert("Por favor, complete los datos bancarios de la transferencia antes de enviar.");
@@ -76,19 +126,12 @@ export default class Cl_cPedido {
     }
 
     try {
-      // 2. Seteo de datos básicos comunes del solicitante
+      // 2. Seteo de datos básicos comunes del solicitante y sincronización del pedido
       this.modelo.cedula = this.vista.cedula;
       this.modelo.nombre = this.vista.nombre;
-      this.modelo.resumenProductos = this.vista.resumenProductos;
-      this.modelo.montoTotal$ = this.vista.montoTotal$;
-      this.modelo.montoTotalBs = this.vista.montoTotalBs;
       this.modelo.status = "pendiente";
+      this.modelo.sincronizarPedido(this.tasaUSD);
       
-      const hoy = new Date();
-      const ano = hoy.getFullYear();
-      const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-      const dia = String(hoy.getDate()).padStart(2, '0');
-
       // Guardamos explícitamente el tipo de pago en la propiedad extendida del modelo
       const modeloDinamico = this.modelo as any;
       modeloDinamico.metodoPago = metodoPagoSelected;
@@ -123,6 +166,7 @@ export default class Cl_cPedido {
       alert(resultado.mensaje);
       
       if (resultado.ok) {
+        this.modelo.limpiarCarrito();
         this.vista.limpiarFormulario();
       }
     } catch (error) {
@@ -142,12 +186,10 @@ export default class Cl_cPedido {
       alert("Introduce una cédula válida.");
       return;
     }
-    this.vista.lblEstadoResultado.innerText = "Buscando en el sistema...";
+    this.vista.mostrarEstadoCargando();
     const pedidos = await Cl_sPedido.consultarEstadoPedido(cedula);
 
-    const pedidosAceptados = pedidos.filter((p: any) => p.status === "aceptado");
-    const totalUSD = pedidosAceptados.reduce((sum: number, p: any) => sum + (Number(p.montoTotal$) || 0), 0);
-    const totalBs = pedidosAceptados.reduce((sum: number, p: any) => sum + (Number(p.montoTotalBs) || 0), 0);
+    const { totalUSD, totalBs } = Cl_mPedido.calcularTotalesAceptados(pedidos);
 
     this.vista.mostrarHistorial(cedula, pedidos, totalUSD, totalBs);
   }

@@ -218,13 +218,30 @@ export default class vCafetin implements I_vCafetin {
       </div>`;
   }
 
+  /**
+   * VISTA PASIVA: Dibuja la tabla con todos los pedidos en la pantalla del administrador.
+   * La vista no altera los datos, solo los inyecta en etiquetas HTML (<tr>, <td>).
+   * 
+   * ¿Cómo funciona?
+   * 1. Verifica si hay pedidos. Si no hay, dibuja un mensaje de "No hay pedidos".
+   * 2. Si hay pedidos, recorre uno por uno (`forEach`) la lista que le enviaron.
+   * 3. Crea una "fila" de tabla (`<tr>`) para cada pedido y rellena sus columnas (`<td>`) con los datos (Cédula, Nombre, Monto, etc).
+   * 4. Si el pedido está "pendiente", dibuja los botones (✓) y (✗). Si no, dibuja una etiqueta con su estado.
+   * 5. Al final, busca todos esos botones que acaba de crear y les "enchufa" un evento de click 
+   *    para que avisen al Controlador cuando el administrador los presione.
+   */
   renderizarPedidos(pedidos: any[]): void {
+    // 1. Limpiamos la tabla o mostramos mensaje de vacío
     this.tablaPedidos.innerHTML = pedidos.length === 0
       ? `<tr><td colspan="7" class="text-center">No hay pedidos registrados</td></tr>`
       : "";
 
+    // 2. Recorremos los pedidos para dibujarlos
     pedidos.forEach(p => {
+      // Elegimos un color de etiqueta dependiendo de si fue aceptado, rechazado o está pendiente
       const claseStatus = p.status === "aceptado" ? "status-aceptado" : p.status === "rechazado" ? "status-rechazado" : "status-pendiente";
+      
+      // 3. Creamos la fila HTML y la rellenamos
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td><b>${p.id}</b></td>
@@ -242,24 +259,44 @@ export default class vCafetin implements I_vCafetin {
             <button class="btn-no" data-id="${p.id}">✗</button>
           ` : `<span class="badge ${claseStatus}">${p.status.toUpperCase()}</span>`}
         </td>`;
+        
+      // Metemos la fila terminada a la tabla visual
       this.tablaPedidos.appendChild(tr);
     });
 
+    // 5. Configurar los botones recién creados para que avisen al controlador si les hacen click
     this.tablaPedidos.querySelectorAll(".btn-ok").forEach(b =>
       b.addEventListener("click", () => this.manejadorAccionPedido((b as HTMLElement).dataset.id!, "aceptado")));
     this.tablaPedidos.querySelectorAll(".btn-no").forEach(b =>
       b.addEventListener("click", () => this.manejadorAccionPedido((b as HTMLElement).dataset.id!, "rechazado")));
   }
 
+  /**
+   * VISTA PASIVA: Dibuja la lista de productos disponibles en la sección de "Catálogo".
+   * 
+   * ¿Cómo funciona?
+   * 1. Limpia la lista (`<li>`). Si no hay productos, muestra "No hay productos".
+   * 2. Recorre (`forEach`) la lista de productos.
+   * 3. Crea un elemento de lista (`<li>`) con el nombre, código, precio y un botón de "basurero" para eliminar.
+   * 4. Añade el evento de click al botón de basura para que le avise al Controlador cuál producto quiere borrar el usuario.
+   */
   renderizarListaProductos(productos: any[]): void {
+    // 1. Limpiamos o mostramos vacío
     this.listaProductos.innerHTML = productos.length === 0 ? `<li>No hay productos</li>` : "";
+    
+    // 2. Recorremos los productos
     productos.forEach(p => {
+      // 3. Creamos el elemento HTML para este producto
       const li = document.createElement("li");
       li.className = "prod-item";
       li.innerHTML = `
         <span>• [${p.codigo || 'S/C'}] <b>${p.nombre}</b> - ${p.precio.toFixed(2)}$</span>
         <button class="btn-del" data-id="${p.id}">🗑</button>`;
+        
+      // Lo metemos en la lista principal
       this.listaProductos.appendChild(li);
+      
+      // 4. Conectamos el botón de basura con el manejador (para avisarle al Controlador)
       li.querySelector(".btn-del")?.addEventListener("click", () => this.manejadorEliminarProducto(p.id));
     });
   }

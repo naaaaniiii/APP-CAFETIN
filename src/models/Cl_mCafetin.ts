@@ -84,38 +84,71 @@ export default class Cafetin {
     return this.calcularMontoAceptadoUsd() * this._tasaCambio;
   }
 
-  // MÉTODO CORREGIDO: Cuenta de forma segura sin importar mayúsculas/minúsculas ni espacios vacíos
+  /**
+   * LÓGICA DE NEGOCIO: Busca cuál es el producto que más se ha vendido en todo el cafetín.
+   * 
+   * ¿Cómo funciona?
+   * 1. Revisa todos los pedidos registrados en el sistema.
+   * 2. Filtra solo los pedidos que ya fueron "aceptados" (pagados y confirmados).
+   * 3. Cuenta cuántas unidades de cada producto se han vendido, sin importar si lo escribieron 
+   *    con mayúsculas o minúsculas (ej. trata "Empanada" y "empanada" como lo mismo).
+   * 4. Al final, busca cuál producto tuvo el número más alto y lo devuelve como texto.
+   */
   public obtenerProductoMasPedido(): string {
+    // 1. DICCIONARIOS (Cajas para guardar datos)
+    // conteoGlobal: Guardará la cantidad total vendida. Ejemplo: { "hamburguesa": 5, "refresco": 2 }
     const conteoGlobal: { [key: string]: number } = {};
-    const formatoOriginal: { [key: string]: string } = {}; // Guarda el nombre bonito original para mostrarlo en el dashboard
+    
+    // formatoOriginal: Guardará el nombre bonito para mostrar en pantalla. Ejemplo: { "hamburguesa": "Hamburguesa Especial" }
+    const formatoOriginal: { [key: string]: string } = {};
 
+    // 2. RECOPILAR DATOS DE CADA PEDIDO
+    // Recorremos la lista completa de pedidos
     this._pedidos.forEach(pedido => {
+      // Solo nos importan los pedidos que fueron aceptados (no sumamos los rechazados ni los pendientes)
       if (pedido.status === "aceptado") {
+        // Pedimos la lista de productos de este pedido (ej: [{producto: "Empanada", cantidad: 2}])
         const desgloses = pedido.desglosarCantidades();
+        
+        // Recorremos cada producto que trajo este pedido
         desgloses.forEach(item => {
           if (item.producto) {
+            // Limpiamos el nombre: le quitamos espacios a los lados y lo ponemos en minúsculas.
+            // Así evitamos que "Empanada" y "empanada " se cuenten por separado.
             const nombreLimpio = item.producto.trim().toLowerCase();
+            
+            // Sumamos la cantidad vendida al acumulado global de ese producto.
+            // Si el producto no existía en nuestra "caja", asume que era 0 y le suma la cantidad.
             conteoGlobal[nombreLimpio] = (conteoGlobal[nombreLimpio] || 0) + item.cantidad;
-            formatoOriginal[nombreLimpio] = item.producto.trim(); // Guarda "Empanada de Pollo" en vez de "empanada de pollo"
+            
+            // Guardamos el nombre original (con sus mayúsculas y acentos) para usarlo al final
+            formatoOriginal[nombreLimpio] = item.producto.trim();
           }
         });
       }
     });
 
-    let productoMasVendidoClave = "";
-    let maxCantidad = 0;
+    // 3. BUSCAR EL GANADOR (El que más se vendió)
+    let productoMasVendidoClave = ""; // Aquí guardaremos el nombre (en minúsculas) del ganador
+    let maxCantidad = 0; // Aquí guardaremos el récord de ventas actual
 
+    // Recorremos nuestra "caja" de conteoGlobal para ver quién tiene el número mayor
     for (const clave in conteoGlobal) {
       if (conteoGlobal[clave] > maxCantidad) {
+        // Si encontramos uno que superó el récord actual, lo coronamos como el nuevo ganador
         maxCantidad = conteoGlobal[clave];
         productoMasVendidoClave = clave;
       }
     }
 
+    // 4. DEVOLVER EL RESULTADO
+    // Si encontramos un ganador que haya vendido al menos 1 unidad
     if (maxCantidad > 0 && productoMasVendidoClave !== "") {
+      // Devolvemos el nombre bonito + la cantidad (ej: "Empanada de Pollo (15 unds)")
       return `${formatoOriginal[productoMasVendidoClave]} (${maxCantidad} unds)`;
     }
 
+    // Si nadie vendió nada (o no hay pedidos aceptados), devolvemos "Ninguno"
     return "Ninguno";
   }
 

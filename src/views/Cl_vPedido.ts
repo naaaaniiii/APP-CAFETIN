@@ -1,5 +1,12 @@
 import { I_vPedido } from "../interfaces/I_vPedido.js";
 
+/**
+ * Vista del Pedido (Cl_vPedido)
+ * 
+ * RESPONSABILIDAD:
+ * La vista solo sirve para prestar sus espacios para mostrar lo que el controlador le mande.
+ * Solo lee elementos del DOM y notifica al controlador cuando el usuario interactúa.
+ */
 export default class Cl_vPedido implements I_vPedido {
   private inCedula: HTMLInputElement;
   private inNombre: HTMLInputElement;
@@ -31,11 +38,9 @@ export default class Cl_vPedido implements I_vPedido {
   private tituloDetalle: HTMLElement;
   private btnVolverSecciones: HTMLButtonElement;
 
-  private tasaCambio: number = 1;
-  private totalUSD: number = 0;
-  private totalBS: number = 0;
-  private carrito: { [key: string]: { nombre: string; cantidad: number; precio: number; codigo?: string } } = {};
   private cuentasBackend: any[] = []; // Guarda las cuentas de forma local
+  private manejadorModificarCantidadCarrito!: (id: string, incremento: number) => void;
+  private manejadorProcederPago!: () => void;
 
   constructor() {
     this.inCedula = document.getElementById("pedido_inCedula") as HTMLInputElement;
@@ -113,8 +118,16 @@ export default class Cl_vPedido implements I_vPedido {
     // Delegación de eventos para botones del carrito
     document.addEventListener("click", (e) => {
       const target = e.target as HTMLElement;
-      if (target.classList.contains("btn-sumar")) this.modificarCantidad(target.dataset.id!, 1);
-      if (target.classList.contains("btn-restar")) this.modificarCantidad(target.dataset.id!, -1);
+      if (target.classList.contains("btn-sumar")) {
+        if (this.manejadorModificarCantidadCarrito) {
+          this.manejadorModificarCantidadCarrito(target.dataset.id!, 1);
+        }
+      }
+      if (target.classList.contains("btn-restar")) {
+        if (this.manejadorModificarCantidadCarrito) {
+          this.manejadorModificarCantidadCarrito(target.dataset.id!, -1);
+        }
+      }
     });
 
     // Restringir la clave del punto de venta a solo números (evitar letras y caracteres especiales)
@@ -144,26 +157,12 @@ export default class Cl_vPedido implements I_vPedido {
     }
 
     this.btSiguiente.onclick = () => {
-      if (this.cedula === 0 || this.nombre === "") {
-        alert("Por favor introduce tu cédula y nombre antes de continuar.");
-        return;
-      }
-      if (this.totalUSD > 0) {
-        this.secPago.classList.remove("oculto");
-        this.secPago.scrollIntoView({ behavior: "smooth" });
-      } else {
-        alert("Debes agregar al menos un producto al carrito.");
+      if (this.manejadorProcederPago) {
+        this.manejadorProcederPago();
       }
     };
   }
 
-  private modificarCantidad(id: string, incremento: number): void {
-    if (!this.carrito[id]) return;
-    this.carrito[id].cantidad = Math.max(0, this.carrito[id].cantidad + incremento);
-    const lbl = document.getElementById(`cant-${id}`);
-    if (lbl) lbl.innerText = this.carrito[id].cantidad.toString();
-    this.calcularFactura();
-  }
   private alternarCamposPago(): void {
     const metodo = this.metodoPago;
     
@@ -208,25 +207,19 @@ export default class Cl_vPedido implements I_vPedido {
   }
   get nombre(): string {
      return this.inNombre.value.trim();
-     }
-  get montoTotal$(): number {
-     return this.totalUSD; 
-    }
-  get montoTotalBs(): number { 
-    return this.totalBS;
-   }
+  }
   get cuentaOrigen(): string { 
     return this.inCuentaOrigen.value.trim(); 
   }
   get cuentaDestino(): string {
      return this.inCuentaDestino.value; 
-    }
+  }
   get referencia(): string {
      return this.inReferencia.value.trim();
-     }
+  }
   get cedulaABuscar(): number { 
     return parseInt(this.inCedulaBuscar.value.trim()) || 0;
-   }
+  }
   
   get metodoPago(): "transferencia" | "pagomovil" | "punto" | "efectivoUSD" | "efectivoBS" {
     return this.selectMetodoPago.value as any;
@@ -239,26 +232,24 @@ export default class Cl_vPedido implements I_vPedido {
   }
   get puntoTipoCuenta(): "ahorro" | "corriente" {
      return this.selectPuntoTipo.value as any;
-     }
-
-  get resumenProductos(): string {
-    return Object.entries(this.carrito)
-      .filter(([_, p]) => p.cantidad > 0)
-      .map(([_, p]) => `${p.cantidad}x${p.codigo || p.nombre}`)
-      .join(", ");
   }
 
   // --- MÉTODOS ---
   onEnviarPedido(callback: () => void): void {
      this.btEnviar.onclick = callback;
-     }
+  }
   onBuscarPedido(callback: () => void): void {
      this.btBuscar.onclick = callback; 
-    }
+  }
+  onModificarCantidadCarrito(callback: (id: string, incremento: number) => void): void {
+     this.manejadorModificarCantidadCarrito = callback;
+  }
+  onProcederPago(callback: () => void): void {
+     this.manejadorProcederPago = callback;
+  }
 
-  setTasa(tasa: number): void {
-    this.tasaCambio = tasa;
-    this.lblTasa.innerText = tasa.toFixed(2);
+  setTasaUSD(tasaUSD: number): void {
+    this.lblTasa.innerText = tasaUSD.toFixed(2);
   }
 
   cargarCuentasDestino(cuentas: any[]): void {
@@ -268,7 +259,6 @@ export default class Cl_vPedido implements I_vPedido {
 
   renderizarMenu(productos: any[]): void {
     productos.forEach(p => {
-      this.carrito[p.id] = { nombre: p.nombre, cantidad: 0, precio: p.precio, codigo: p.codigo || p.nombre };
       const contenedor = document.querySelector(`#categoria-${p.categoria.toLowerCase()} .contenido`);
       if (!contenedor) return;
 
@@ -285,17 +275,38 @@ export default class Cl_vPedido implements I_vPedido {
     });
   }
 
-  private calcularFactura(): void {
-    this.totalUSD = Object.values(this.carrito).reduce((acc, p) => acc + (p.cantidad * p.precio), 0);
-    this.totalBS = this.totalUSD * this.tasaCambio;
-    this.lblTotalUSD.innerText = this.totalUSD.toFixed(2);
-    this.lblTotalBS.innerText = this.totalBS.toFixed(2);
+  /**
+   * VISTA PASIVA: Presta el espacio en el DOM para actualizar la cantidad del carritoCarrito.
+   * El controlador decide cuándo llamar a este método y qué número pasarle.
+   */
+  actualizarCantidadCarritoUI(id: string, cantidad: number): void {
+    const lbl = document.getElementById(`cant-${id}`);
+    if (lbl) {
+      lbl.innerText = cantidad.toString();
+    }
+  }
+
+  /**
+   * VISTA PASIVA: Presta el espacio para mostrar los totales USD y Bs en pantalla.
+   */
+  actualizarFacturaUI(totalUSD: number, totalBs: number): void {
+    this.lblTotalUSD.innerText = totalUSD.toFixed(2);
+    this.lblTotalBS.innerText = totalBs.toFixed(2);
 
     // Actualizar el monto en el panel de punto de venta
     const puntoMontoTotal = document.getElementById("punto_lblMontoTotal");
     if (puntoMontoTotal) {
-      puntoMontoTotal.innerText = `${this.totalBS.toFixed(2)} Bs (${this.totalUSD.toFixed(2)} $)`;
+      puntoMontoTotal.innerText = `${totalBs.toFixed(2)} Bs (${totalUSD.toFixed(2)} $)`;
     }
+  }
+
+  mostrarSeccionPago(): void {
+    this.secPago.classList.remove("oculto");
+    this.secPago.scrollIntoView({ behavior: "smooth" });
+  }
+
+  mostrarEstadoCargando(): void {
+    this.lblEstadoResultado.innerText = "Buscando en el sistema...";
   }
 
   limpiarFormulario(): void {
@@ -306,9 +317,8 @@ export default class Cl_vPedido implements I_vPedido {
     this.inPuntoCedula.value = "";
     this.inPuntoClave.value = "";
     this.selectMetodoPago.value = "transferencia";
-    Object.keys(this.carrito).forEach(id => this.carrito[id].cantidad = 0);
     document.querySelectorAll('[id^="cant-"]').forEach(el => (el.innerHTML = "0"));
-    this.calcularFactura();
+    this.actualizarFacturaUI(0, 0);
     this.alternarCamposPago();
     this.secPago.classList.add("oculto");
 
