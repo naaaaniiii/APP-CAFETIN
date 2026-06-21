@@ -242,13 +242,11 @@ export default class Cl_mPedido {
     }
   }
 
-  /**
-   * LÓGICA DE NEGOCIO: Inicializa el estado del carritoCarrito.
-   */
   public inicializarCarrito(productos: any[]): void {
     this._carrito = {};
     productos.forEach((p) => {
-      this._carrito[p.id] = {
+      const key = p.idProd ? p.idProd.toString() : p.id;
+      this._carrito[key] = {
         nombre: p.nombre,
         cantidad: 0,
         precio: p.precio,

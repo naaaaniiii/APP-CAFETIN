@@ -15,6 +15,7 @@ export default class vCafetin implements I_vCafetin {
   private btCta: HTMLButtonElement;
   private tablaPedidos: HTMLElement;
   private listaProductos: HTMLElement;
+  private contenedorEstadisticas: HTMLElement;
 
   // NUEVOS SELECTORES PARA CONTROLAR LA INTERFAZ
   private selectTipoFondo: HTMLSelectElement;
@@ -46,6 +47,7 @@ export default class vCafetin implements I_vCafetin {
     this.btCta = document.getElementById("admin_btCta") as HTMLButtonElement;
     this.tablaPedidos = document.getElementById("admin_tablaPedidos") as HTMLElement;
     this.listaProductos = document.getElementById("admin_listaProductos") as HTMLElement;
+    this.contenedorEstadisticas = document.getElementById("admin_contenedorEstadisticas") as HTMLElement;
 
     // Inicialización de elementos dinámicos añadidos
     this.selectTipoFondo = document.getElementById("admin_selectTipoFondo") as HTMLSelectElement;
@@ -66,13 +68,7 @@ export default class vCafetin implements I_vCafetin {
     const mostrarSeccionAdmin = (targetId: string) => {
       sections.forEach(id => {
         const el = document.getElementById(id);
-        if (el) {
-          if (id === targetId) {
-            el.classList.remove("oculto");
-          } else {
-            el.classList.add("oculto");
-          }
-        }
+        el?.classList.toggle("oculto", id !== targetId);
       });
     };
 
@@ -80,10 +76,7 @@ export default class vCafetin implements I_vCafetin {
       btn.addEventListener("click", () => {
         btnsNav.forEach(b => b.classList.remove("activo"));
         btn.classList.add("activo");
-        const target = btn.getAttribute("data-target");
-        if (target) {
-          mostrarSeccionAdmin(target);
-        }
+        mostrarSeccionAdmin(btn.getAttribute("data-target") || "");
       });
     });
 
@@ -91,9 +84,7 @@ export default class vCafetin implements I_vCafetin {
     mostrarSeccionAdmin("sec-tasa");
   }
   onAlternarTipoRegistro(callback: () => void): void {
-    if (this.selectTipoFondo) {
-      this.selectTipoFondo.onchange = callback;
-    }
+    this.selectTipoFondo.onchange = callback;
   }
 
   configurarCamposCuenta(config: {
@@ -102,11 +93,7 @@ export default class vCafetin implements I_vCafetin {
     labelNumero: string;
     placeholderNumero: string;
   }): void {
-    if (config.mostrarTitular) {
-      this.grupoNombreTitular.classList.remove("oculto");
-    } else {
-      this.grupoNombreTitular.classList.add("oculto");
-    }
+    this.grupoNombreTitular.classList.toggle("oculto", !config.mostrarTitular);
     this.lblCtaCedula.innerText = config.labelCedula;
     this.lblDinamicoNumero.innerText = config.labelNumero;
     this.inCtaNumero.placeholder = config.placeholderNumero;
@@ -156,24 +143,17 @@ export default class vCafetin implements I_vCafetin {
    * Evita lógica del controlador en la vista y mantiene el flujo MVC limpio.
    */
   onBuscarCliente(callback: () => void): void {
-    if (this.btBuscarCliente) {
-      this.btBuscarCliente.onclick = callback;
-    }
+    this.btBuscarCliente.onclick = callback;
   }
   mostrarTotalPagadoCliente(cedula: number, totalUSD: number, totalBs: number): void {
-    if (cedula === 0) {
-      this.lblResultadoCliente.innerHTML = "";
-      this.lblResultadoCliente.style.display = "none";
-      return;
-    }
-    this.lblResultadoCliente.innerHTML = `
+    this.lblResultadoCliente.style.display = cedula !== 0 ? "block" : "none";
+    this.lblResultadoCliente.innerHTML = cedula !== 0 ? `
       <h4>Resultado para C.I: ${cedula}</h4>
       <div style="margin-top: 10px; padding: 12px; background-color: #e8f5e9; border-left: 4px solid #2e7d32; border-radius: 8px;">
         <strong>Total Pagado (Aceptado):</strong>
         <span style="color: #2e7d32; font-weight: bold; margin-left: 5px;">$${totalUSD.toFixed(2)}</span>
         <span style="color: #1565c0; font-weight: bold; margin-left: 5px;">/ ${totalBs.toFixed(2)} Bs</span>
-      </div>`;
-    this.lblResultadoCliente.style.display = "block";
+      </div>` : "";
   }
 
   // --- MANEJADORES ---
@@ -187,8 +167,8 @@ export default class vCafetin implements I_vCafetin {
     this.btCta.onclick = callback;
    }
   onEliminarProducto(callback: (id: string) => void): void {
-     this.manejadorEliminarProducto = callback; 
-    }
+      this.manejadorEliminarProducto = callback; 
+     }
   onAccionPedido(callback: (id: string, accion: "aceptado" | "rechazado") => void): void { 
     this.manejadorAccionPedido = callback;
    }
@@ -198,12 +178,9 @@ export default class vCafetin implements I_vCafetin {
   // --- RENDERIZADO ---
   /**
    * Renderiza el panel de estadísticas en la interfaz de administración.
-   * Recibe la información procesada por el controlador/modelo, incluyendo los porcentajes calculados.
    */
   public renderizarEstadisticas(datos: any): void {
-    const contenedor = document.getElementById("admin_contenedorEstadisticas");
-    if (!contenedor) return;
-    contenedor.innerHTML = `
+    this.contenedorEstadisticas.innerHTML = `
       <div class="stat-container">
         <div class="stat-box"> <small>Total de Pedidos</small> <h2>${datos.total}</h2> </div>
         <div class="stat-box"> <small>Pendientes</small> <h2>${datos.pendientes}</h2> </div>
@@ -212,7 +189,7 @@ export default class vCafetin implements I_vCafetin {
         <div class="stat-box stat-monto"> 
           <small>Monto Aceptado</small> 
           <h2>Bs. ${datos.montoBs.toFixed(2)}</h2>
-          <p class="monto-dolar">($ ${datos.monto$ ? datos.monto$.toFixed(2) : '0.00'})</p>
+          <p class="monto-dolar">($ ${datos.monto$.toFixed(2)})</p>
         </div>
         <div class="stat-box"> <small>Más Pedido</small> <h2>${datos.masPedido}</h2> </div>
       </div>`;
@@ -240,11 +217,12 @@ export default class vCafetin implements I_vCafetin {
     pedidos.forEach(p => {
       // Elegimos un color de etiqueta dependiendo de si fue aceptado, rechazado o está pendiente
       const claseStatus = p.status === "aceptado" ? "status-aceptado" : p.status === "rechazado" ? "status-rechazado" : "status-pendiente";
+      const pedId = p.idPed ? p.idPed.toString() : p.id;
       
       // 3. Creamos la fila HTML y la rellenamos
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td><b>${p.id}</b></td>
+        <td><b>${pedId}</b></td>
         <td>${p.cedula}<br><small>${p.nombre}</small></td>
         <td>${p.resumenProductos}</td>
         <td><b>${p.montoTotal$.toFixed(2)}$</b><br><small>${p.montoTotalBs} Bs</small></td>
@@ -255,8 +233,8 @@ export default class vCafetin implements I_vCafetin {
         <td><span class="ref-badge">${p.referencia || 'N/A'}</span></td>
         <td>
           ${p.status === "pendiente" ? `
-            <button class="btn-ok" data-id="${p.id}">✓</button>
-            <button class="btn-no" data-id="${p.id}">✗</button>
+            <button class="btn-ok" data-id="${pedId}">✓</button>
+            <button class="btn-no" data-id="${pedId}">✗</button>
           ` : `<span class="badge ${claseStatus}">${p.status.toUpperCase()}</span>`}
         </td>`;
         
@@ -286,18 +264,19 @@ export default class vCafetin implements I_vCafetin {
     
     // 2. Recorremos los productos
     productos.forEach(p => {
+      const prodId = p.idProd ? p.idProd.toString() : p.id;
       // 3. Creamos el elemento HTML para este producto
       const li = document.createElement("li");
       li.className = "prod-item";
       li.innerHTML = `
         <span>• [${p.codigo || 'S/C'}] <b>${p.nombre}</b> - ${p.precio.toFixed(2)}$</span>
-        <button class="btn-del" data-id="${p.id}">🗑</button>`;
+        <button class="btn-del" data-id="${prodId}">🗑</button>`;
         
       // Lo metemos en la lista principal
       this.listaProductos.appendChild(li);
       
       // 4. Conectamos el botón de basura con el manejador (para avisarle al Controlador)
-      li.querySelector(".btn-del")?.addEventListener("click", () => this.manejadorEliminarProducto(p.id));
+      li.querySelector(".btn-del")?.addEventListener("click", () => this.manejadorEliminarProducto(prodId));
     });
   }
 

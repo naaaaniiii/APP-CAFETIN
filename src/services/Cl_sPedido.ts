@@ -2,35 +2,45 @@ import Cl_mPedido from "../models/Cl_mPedido.js";
 import Cl_sMockApi from "./Cl_sMockApi.js";
 
 export default class Cl_sPedido extends Cl_sMockApi {
-  private static urlPedidos = "https://6a14ae806c7db8aac054d899.mockapi.io/pedidos";
-  private static urlProductos = "https://6a14ae806c7db8aac054d899.mockapi.io/productos";
-  private static urlConfig = "https://6a1730e11b90031f81b2232e.mockapi.io/configuracion/1";
-  private static urlCuentas = "https://6a1730e11b90031f81b2232e.mockapi.io/cuentasBancarias";
-
   static async obtenerProductos(): Promise<any[]> {
-    return await this.get(this.urlProductos);
+    const res = await this.getTabla({ tabla: "productos" });
+    return res.ok ? res.tabla : [];
   }
 
   static async obtenerCuentasDestino(): Promise<any[]> {
-    return await this.get(this.urlCuentas);
+    const res = await this.getTabla({ tabla: "cuentasBancarias" });
+    return res.ok ? res.tabla : [];
   }
 
   static async obtenerTasaDinamica(): Promise<number> {
-    const data = await this.get(this.urlConfig);
-    return data && data.tasaCambio ? parseFloat(data.tasaCambio) : 40.0;
+    const res = await this.getTabla({ tabla: "configuracion" });
+    if (res.ok && res.tabla.length > 0) {
+      const config = res.tabla[0];
+      return config && config.tasaCambio ? parseFloat(config.tasaCambio) : 40.0;
+    }
+    return 40.0;
   }
 
   static async consultarEstadoPedido(cedula: number): Promise<any[]> {
-    return await this.get(`${this.urlPedidos}?cedula=${cedula}`);
+    const res = await this.getTabla({ tabla: "pedidos" });
+    if (res.ok) {
+      return res.tabla.filter((p: any) => Number(p.cedula) === cedula);
+    }
+    return [];
   }
 
   static async guardarPedido(nuevoPedido: Cl_mPedido): Promise<{ ok: boolean; mensaje: string }> {
     try {
-      const resData = await this.post(this.urlPedidos, nuevoPedido);
-      if (!resData) {
-        return { ok: false, mensaje: "Error al registrar el pedido." };
+      const res = await this.getTabla({ tabla: "pedidos" });
+      let nextId = 1;
+      if (res.ok && res.tabla.length > 0) {
+        const ids = res.tabla.map((p: any) => Number(p.idPed) || 0);
+        nextId = Math.max(...ids) + 1;
       }
-      return { ok: true, mensaje: "¡Pedido enviado! Orden Nro: " + resData.id };
+      const registro = nuevoPedido.toJSON() as any;
+      registro.tabla = "pedidos";
+      registro.idPed = nextId;
+      return await this.agregar(registro);
     } catch (error: any) {
       return { ok: false, mensaje: "Error de red: " + error.message };
     }

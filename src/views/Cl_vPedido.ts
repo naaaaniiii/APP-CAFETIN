@@ -88,78 +88,46 @@ export default class Cl_vPedido implements I_vPedido {
     // Configuración de la navegación por botones colgantes
     document.querySelectorAll(".btn-colgante").forEach(btn => {
       btn.addEventListener("click", () => {
-        const categoria = btn.getAttribute("data-categoria");
-        if (categoria) {
-          // Ocultar cuadrícula principal
-          this.containerSecciones.classList.add("oculto");
-          // Mostrar vista de detalle
-          this.containerDetalle.classList.remove("oculto");
-          // Actualizar el título de la sección activa
-          this.tituloDetalle.innerText = nombresCategorias[categoria] || "Categoría";
-          // Ocultar cualquier categoría previamente mostrada
-          document.querySelectorAll(".categoria-bloque").forEach(b => b.classList.add("oculto"));
-          // Mostrar la categoría elegida
-          const bloque = document.getElementById(`categoria-${categoria}`);
-          if (bloque) {
-            bloque.classList.remove("oculto");
-          }
-        }
+        const categoria = btn.getAttribute("data-categoria") || "";
+        this.containerSecciones.classList.add("oculto");
+        this.containerDetalle.classList.remove("oculto");
+        this.tituloDetalle.innerText = nombresCategorias[categoria] || "Categoría";
+        document.querySelectorAll(".categoria-bloque").forEach(b => b.classList.add("oculto"));
+        document.getElementById(`categoria-${categoria}`)?.classList.remove("oculto");
       });
     });
 
-    if (this.btnVolverSecciones) {
-      this.btnVolverSecciones.onclick = () => {
-        this.containerDetalle.classList.add("oculto");
-        this.containerSecciones.classList.remove("oculto");
-        document.querySelectorAll(".categoria-bloque").forEach(b => b.classList.add("oculto"));
-      };
-    }
+    this.btnVolverSecciones.onclick = () => {
+      this.containerDetalle.classList.add("oculto");
+      this.containerSecciones.classList.remove("oculto");
+      document.querySelectorAll(".categoria-bloque").forEach(b => b.classList.add("oculto"));
+    };
 
     // Delegación de eventos para botones del carrito
     document.addEventListener("click", (e) => {
       const target = e.target as HTMLElement;
-      if (target.classList.contains("btn-sumar")) {
-        if (this.manejadorModificarCantidadCarrito) {
-          this.manejadorModificarCantidadCarrito(target.dataset.id!, 1);
-        }
-      }
-      if (target.classList.contains("btn-restar")) {
-        if (this.manejadorModificarCantidadCarrito) {
-          this.manejadorModificarCantidadCarrito(target.dataset.id!, -1);
-        }
-      }
+      target.classList.contains("btn-sumar") && this.manejadorModificarCantidadCarrito(target.dataset.id!, 1);
+      target.classList.contains("btn-restar") && this.manejadorModificarCantidadCarrito(target.dataset.id!, -1);
     });
 
     // Restringir la clave del punto de venta a solo números (evitar letras y caracteres especiales)
-    if (this.inPuntoClave) {
-      this.inPuntoClave.addEventListener("keypress", (e: KeyboardEvent) => {
-        // Bloquear si la tecla presionada no es un número (dígito de 0 a 9)
-        if (!/^\d$/.test(e.key)) {
-          e.preventDefault();
-        }
-      });
-      this.inPuntoClave.addEventListener("input", () => {
-        // En caso de pegar o autocompletar, limpiar cualquier carácter no numérico
-        this.inPuntoClave.value = this.inPuntoClave.value.replace(/\D/g, "");
-      });
-    }
+    this.inPuntoClave.addEventListener("keypress", (e: KeyboardEvent) => {
+      /^\d$/.test(e.key) || e.preventDefault();
+    });
+    this.inPuntoClave.addEventListener("input", () => {
+      this.inPuntoClave.value = this.inPuntoClave.value.replace(/\D/g, "");
+    });
 
     // Restringir la referencia bancaria a solo números (evitar letras y caracteres especiales)
-    if (this.inReferencia) {
-      this.inReferencia.addEventListener("keypress", (e: KeyboardEvent) => {
-        if (!/^\d$/.test(e.key)) {
-          e.preventDefault();
-        }
-      });
-      this.inReferencia.addEventListener("input", () => {
-        this.inReferencia.value = this.inReferencia.value.replace(/\D/g, "");
-      });
-    }
+    this.inReferencia.addEventListener("keypress", (e: KeyboardEvent) => {
+      /^\d$/.test(e.key) || e.preventDefault();
+    });
+    this.inReferencia.addEventListener("input", () => {
+      this.inReferencia.value = this.inReferencia.value.replace(/\D/g, "");
+    });
 
     this.btSiguiente.onclick = () => {
-      if (this.manejadorProcederPago) {
-        this.manejadorProcederPago();
-      }
+      this.manejadorProcederPago();
     };
   }
 
@@ -171,34 +139,41 @@ export default class Cl_vPedido implements I_vPedido {
     this.secCamposPunto.classList.add("oculto");
     this.lblInfoEfectivo.innerText = "";
 
-    // Filtrar y actualizar el listado de cuentas disponibles según la selección
-    if (metodo === "transferencia") {
-      this.secCamposBanco.classList.remove("oculto");
-      this.actualizarComboCuentasDestino("transferencia");
-    } else if (metodo === "pagomovil") {
-      this.secCamposBanco.classList.remove("oculto");
-      this.actualizarComboCuentasDestino("pagomovil");
-    } else if (metodo === "punto") {
-      this.secCamposPunto.classList.remove("oculto");
-    } else if (metodo === "efectivoUSD") {
-      this.lblInfoEfectivo.innerText = "Por favor, entregue el monto exacto en billetes en la caja del cafetín.";
-    } else if (metodo === "efectivoBS") {
-      this.lblInfoEfectivo.innerText = "Por favor, realice el pago en efectivo en taquilla bajo la tasa de cambio vigente.";
-    }
+    const acciones: Record<string, () => void> = {
+      transferencia: () => {
+        this.secCamposBanco.classList.remove("oculto");
+        this.actualizarComboCuentasDestino("transferencia");
+      },
+      pagomovil: () => {
+        this.secCamposBanco.classList.remove("oculto");
+        this.actualizarComboCuentasDestino("pagomovil");
+      },
+      punto: () => {
+        this.secCamposPunto.classList.remove("oculto");
+      },
+      efectivoUSD: () => {
+        this.lblInfoEfectivo.innerText = "Por favor, entregue el monto exacto en billetes en la caja del cafetín.";
+      },
+      efectivoBS: () => {
+        this.lblInfoEfectivo.innerText = "Por favor, realice el pago en efectivo en taquilla bajo la tasa de cambio vigente.";
+      }
+    };
+
+    (acciones[metodo] || (() => {}))();
   }
 
   private actualizarComboCuentasDestino(tipo: "transferencia" | "pagomovil"): void {
     const filtradas = this.cuentasBackend.filter(c => (c.tipo || "transferencia") === tipo);
-    if (filtradas.length === 0) {
-      this.inCuentaDestino.innerHTML = `<option value="Directo en Taquilla">No hay cuentas registradas - Pagar en taquilla</option>`;
-      return;
-    }
-    this.inCuentaDestino.innerHTML = filtradas.map(c => {
+    const opcionesMap = filtradas.map(c => {
       const valor = tipo === "pagomovil" 
         ? `${c.banco} - ${c.titular} - ${c.numero}` 
         : `${c.banco} - ${c.numero}`;
       return `<option value="${valor}">${c.banco} - ${c.titular} (${c.numero})</option>`;
     }).join("");
+
+    this.inCuentaDestino.innerHTML = filtradas.length === 0 
+      ? `<option value="Directo en Taquilla">No hay cuentas registradas - Pagar en taquilla</option>`
+      : opcionesMap;
   }
 
   // --- GETTERS ---
@@ -262,14 +237,15 @@ export default class Cl_vPedido implements I_vPedido {
       const contenedor = document.querySelector(`#categoria-${p.categoria.toLowerCase()} .contenido`);
       if (!contenedor) return;
 
+      const prodId = p.idProd ? p.idProd.toString() : p.id;
       const divItem = document.createElement("div");
       divItem.className = "producto-item";
       divItem.innerHTML = `
         <span><strong>${p.nombre}</strong> - ${p.precio.toFixed(2)}$</span>
         <div>
-          <button type="button" class="btn-restar" data-id="${p.id}">-</button>
-          <span id="cant-${p.id}">0</span>
-          <button type="button" class="btn-sumar" data-id="${p.id}">+</button>
+          <button type="button" class="btn-restar" data-id="${prodId}">-</button>
+          <span id="cant-${prodId}">0</span>
+          <button type="button" class="btn-sumar" data-id="${prodId}">+</button>
         </div>`;
       contenedor.appendChild(divItem);
     });
@@ -281,9 +257,7 @@ export default class Cl_vPedido implements I_vPedido {
    */
   actualizarCantidadCarritoUI(id: string, cantidad: number): void {
     const lbl = document.getElementById(`cant-${id}`);
-    if (lbl) {
-      lbl.innerText = cantidad.toString();
-    }
+    lbl && (lbl.innerText = cantidad.toString());
   }
 
   /**
@@ -295,9 +269,7 @@ export default class Cl_vPedido implements I_vPedido {
 
     // Actualizar el monto en el panel de punto de venta
     const puntoMontoTotal = document.getElementById("punto_lblMontoTotal");
-    if (puntoMontoTotal) {
-      puntoMontoTotal.innerText = `${totalBs.toFixed(2)} Bs (${totalUSD.toFixed(2)} $)`;
-    }
+    puntoMontoTotal && (puntoMontoTotal.innerText = `${totalBs.toFixed(2)} Bs (${totalUSD.toFixed(2)} $)`);
   }
 
   mostrarSeccionPago(): void {
@@ -334,12 +306,14 @@ export default class Cl_vPedido implements I_vPedido {
    * de acuerdo con las especificaciones del patrón MVC.
    */
   mostrarHistorial(cedula: number, pedidos: any[], totalUSD: number, totalBs: number): void {
-    if (pedidos.length === 0) {
-      this.lblEstadoResultado.innerText = "No se encontraron pedidos.";
-      return;
-    }
+    const listadoPedidosHtml = pedidos.map(p => `
+      <li>
+        Orden #${p.id || 'N/A'}: ${p.resumenProductos} -
+        Estado: <b class="status-${p.status || 'pendiente'}">${(p.status || 'pendiente').toUpperCase()}</b>
+      </li>
+    `).join("");
 
-    this.lblEstadoResultado.innerHTML = `
+    const historialHtml = `
       <h4>Historial para C.I: ${cedula}</h4>
       <div style="margin: 12px 0; padding: 12px; background-color: #e8f5e9; border-left: 4px solid #2e7d32; border-radius: 8px; font-size: 14px;">
         <strong>Total Pagado:</strong>
@@ -347,12 +321,11 @@ export default class Cl_vPedido implements I_vPedido {
         <span style="color: #1565c0; font-weight: bold; margin-left: 5px;">/ ${totalBs.toFixed(2)} Bs</span>
       </div>
       <ul class="lista-pedidos">
-        ${pedidos.map(p => `
-          <li>
-            Orden #${p.id || 'N/A'}: ${p.resumenProductos} -
-            Estado: <b class="status-${p.status || 'pendiente'}">${(p.status || 'pendiente').toUpperCase()}</b>
-          </li>
-        `).join("")}
+        ${listadoPedidosHtml}
       </ul>`;
+
+    this.lblEstadoResultado.innerHTML = pedidos.length === 0 
+      ? "No se encontraron pedidos." 
+      : historialHtml;
   }
 }

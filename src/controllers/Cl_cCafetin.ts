@@ -60,7 +60,7 @@ export default class Cl_cCafetin {
   private async procesarAccionPedido(id: string, accion: "aceptado" | "rechazado") {
     if (!confirm(`¿Confirmar acción: ${accion.toUpperCase()} para la orden #${id}?`)) return;
     try {
-      if (await Cl_sCafetin.actualizarEstadoPedido(id, accion)) {
+      if (await Cl_sCafetin.actualizarEstadoPedido(Number(id), accion)) {
         alert(`Orden #${id} actualizada con éxito.`);
         await this.cargarYRenderizarPedidos();
       }
@@ -161,7 +161,7 @@ export default class Cl_cCafetin {
   private async procesarEliminarProducto(id: string) {
     if (!confirm("¿Está seguro de que desea remover este producto del menú?")) return;
     try {
-      if (await Cl_sCafetin.eliminarProducto(id)) {
+      if (await Cl_sCafetin.eliminarProducto(Number(id))) {
         alert("Producto eliminado del menú.");
         const prods = await Cl_sCafetin.obtenerProductos();
         this.vista.renderizarListaProductos(prods);

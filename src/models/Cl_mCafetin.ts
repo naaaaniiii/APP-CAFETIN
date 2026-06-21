@@ -20,7 +20,7 @@ export default class Cafetin {
     arrayPlanos.forEach((p) => {
       this._pedidos.push(
         new Cl_mPedido({
-          id: p.id || p._id,
+          id: p.idPed ? p.idPed.toString() : (p.id || p._id || ""),
           nombre: p.nombre,
           cedula: p.cedula,
           resumenProductos: p.resumenProductos,
